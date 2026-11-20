@@ -30,7 +30,7 @@ grab the latest apk from [releases](https://github.com/tristitious/bunko/release
 
 ```bash
 git clone https://github.com/Suwayomi/Suwayomi-Bunko.git
-cd Suwayomi-bunko
+cd Suwayomi-Bunko
 ./gradlew assembleRelease
 ```
 
