@@ -29,8 +29,8 @@
 grab the latest apk from [releases](https://github.com/tristitious/bunko/releases), or build it yourself:
 
 ```bash
-git clone https://github.com/tristitious/bunko.git
-cd bunko
+git clone https://github.com/Suwayomi/Suwayomi-Bunko.git
+cd Suwayomi-bunko
 ./gradlew assembleRelease
 ```
 
