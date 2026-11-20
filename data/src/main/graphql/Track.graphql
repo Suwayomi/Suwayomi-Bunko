@@ -1,0 +1,104 @@
+fragment TrackerFragment on TrackerType {
+  id
+  name
+  icon
+  isLoggedIn
+  isTokenExpired
+  authUrl
+  scores
+  supportsTrackDeletion
+  statuses {
+    name
+    value
+  }
+}
+
+fragment TrackRecordFragment on TrackRecordType {
+  id
+  trackerId
+  mangaId
+  remoteId
+  remoteUrl
+  title
+  status
+  score
+  displayScore
+  lastChapterRead
+  totalChapters
+}
+
+query GetTrackers {
+  trackers {
+    nodes {
+      ...TrackerFragment
+    }
+  }
+}
+
+query GetMangaTrackRecords($mangaId: Int!) {
+  manga(id: $mangaId) {
+    trackRecords {
+      nodes {
+        ...TrackRecordFragment
+      }
+    }
+  }
+}
+
+query SearchTracker($trackerId: Int!, $query: String!) {
+  searchTracker(input: {trackerId: $trackerId, query: $query}) {
+    trackSearches {
+      remoteId
+      title
+      coverUrl
+      summary
+      publishingStatus
+      publishingType
+      startDate
+      totalChapters
+      trackingUrl
+    }
+  }
+}
+
+mutation BindTrack($mangaId: Int!, $trackerId: Int!, $remoteId: LongString!) {
+  bindTrack(input: {mangaId: $mangaId, trackerId: $trackerId, remoteId: $remoteId}) {
+    trackRecord {
+      ...TrackRecordFragment
+    }
+  }
+}
+
+mutation UpdateTrack($recordId: Int!, $status: Int, $scoreString: String, $lastChapterRead: Float) {
+  updateTrack(input: {recordId: $recordId, status: $status, scoreString: $scoreString, lastChapterRead: $lastChapterRead}) {
+    trackRecord {
+      ...TrackRecordFragment
+    }
+  }
+}
+
+mutation UnbindTrack($recordId: Int!, $deleteRemoteTrack: Boolean) {
+  unbindTrack(input: {recordId: $recordId, deleteRemoteTrack: $deleteRemoteTrack}) {
+    trackRecord {
+      id
+    }
+  }
+}
+
+mutation LoginTrackerOAuth($trackerId: Int!, $callbackUrl: String!) {
+  loginTrackerOAuth(input: {trackerId: $trackerId, callbackUrl: $callbackUrl}) {
+    isLoggedIn
+  }
+}
+
+mutation LoginTrackerCredentials($trackerId: Int!, $username: String!, $password: String!) {
+  loginTrackerCredentials(input: {trackerId: $trackerId, username: $username, password: $password}) {
+    isLoggedIn
+  }
+}
+
+mutation LogoutTracker($trackerId: Int!) {
+  logoutTracker(input: {trackerId: $trackerId}) {
+    isLoggedIn
+  }
+}

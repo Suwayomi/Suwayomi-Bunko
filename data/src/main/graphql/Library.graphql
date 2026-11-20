@@ -1,0 +1,45 @@
+mutation SetMangaInLibrary($id: Int!, $inLibrary: Boolean!) {
+  updateManga(input: {id: $id, patch: {inLibrary: $inLibrary}}) {
+    clientMutationId
+  }
+}
+
+mutation SetMangasInLibrary($ids: [Int!]!, $inLibrary: Boolean!) {
+  updateMangas(input: {ids: $ids, patch: {inLibrary: $inLibrary}}) {
+    clientMutationId
+  }
+}
+subscription LibraryUpdateStatusChanged {
+  libraryUpdateStatusChanged(input: {maxUpdates: 0}) {
+    jobsInfo {
+      ...UpdaterJobsInfoFragment
+    }
+  }
+}
+query GetReleaseSchedule($since: LongString!) {
+  mangas(condition: {inLibrary: true}) {
+    nodes {
+      ...MangaFragment
+      latestUploadedChapter {
+        uploadDate
+      }
+      categories {
+        nodes {
+          id
+        }
+      }
+      trackRecords {
+        nodes {
+          remoteId
+          remoteUrl
+        }
+      }
+    }
+  }
+  chapters(filter: {inLibrary: {equalTo: true}, uploadDate: {greaterThan: $since}}) {
+    nodes {
+      mangaId
+      uploadDate
+    }
+  }
+}

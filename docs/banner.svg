@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 48" width="420" height="48">
+  <style>
+    text {
+      fill: #000000;
+    }
+    @media (prefers-color-scheme: dark) {
+      text {
+        fill: #ffffff;
+      }
+    }
+  </style>
+  <defs>
+    <path id="文"
+          d="M-1,0 C-0.5,-3.2 0.5,3.2 1,0"
+          pathLength="2"
+          transform="matrix(210 0 0 1 210 30)"/>
+  </defs>
+  <text font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+        font-size="20"
+        font-weight="600"
+        letter-spacing="0.4"
+        text-anchor="middle">
+    <textPath href="#文" startOffset="50%">bunko — suwayomi client</textPath>
+  </text>
+</svg>

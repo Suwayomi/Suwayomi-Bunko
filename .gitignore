@@ -1,0 +1,35 @@
+gradle-local.properties
+.gradle/
+build/
+*.class
+*.log
+*.settings.xml
+tmp/
+.kotlin
+
+# release signing: never commit keys or their passwords
+keystore.properties
+*.jks
+*.keystore
+gpg/
+
+# local scratch and crash dumps
+scratchpad/
+crash_report*.txt
+
+# IDEA
+*.iml
+*.ipr
+*.iws
+/.idea/*
+!/.idea/runConfigurations/
+!/.idea/scopes
+!/.idea/copyright
+out/
+workspace.xml
+/local.properties
+
+.DS_Store
+captures
+.externalNativeBuild
+.cxx

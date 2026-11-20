@@ -1,0 +1,7 @@
+fragment UpdaterJobsInfoFragment on UpdaterJobsInfoType {
+  finishedJobs
+  isRunning
+  skippedCategoriesCount
+  skippedMangasCount
+  totalJobs
+}

@@ -1,0 +1,84 @@
+query GetMangaChapters($id: Int!) {
+  chapters(
+    condition: {mangaId: $id}
+    orderBy: SOURCE_ORDER,
+    orderByType: DESC,
+  ) {
+    nodes {
+      ...ChapterFragment
+    }
+  }
+}
+
+query GetLastReadChapter {
+  chapters(
+    filter: {inLibrary: {equalTo: true}}
+    orderBy: LAST_READ_AT
+    orderByType: DESC
+    first: 1
+  ) {
+    nodes {
+      ...ChapterWithMangaFragment
+    }
+  }
+}
+
+mutation UpdateChapter($id: Int!, $patch: UpdateChapterPatchInput!) {
+  updateChapter(input: {id: $id, patch: $patch}) {
+    clientMutationId
+  }
+}
+
+mutation UpdateChapters($id: [Int!]!, $patch: UpdateChapterPatchInput!) {
+  updateChapters(input: {ids: $id, patch: $patch}) {
+    clientMutationId
+  }
+}
+
+mutation UpdateChapterMeta($id: Int!, $key: String!, $value: String!) {
+  setChapterMeta(input: {meta: {chapterId: $id, key: $key, value: $value}}) {
+    clientMutationId
+  }
+}
+
+mutation DeleteDownloadedChapter($id: Int!) {
+  deleteDownloadedChapter(input: {id: $id}) {
+    clientMutationId
+  }
+}
+
+mutation DeleteDownloadedChapters($ids: [Int!]!) {
+  deleteDownloadedChapters(input: {ids: $ids}) {
+    clientMutationId
+  }
+}
+
+mutation FetchChapters($mangaId: Int!) {
+  fetchChapters(input: {mangaId: $mangaId}) {
+    chapters {
+      ...ChapterFragment
+    }
+  }
+}
+
+mutation FetchChapterPages($id: Int!) {
+  fetchChapterPages(input: {chapterId: $id}) {
+    pages
+  }
+}
+query GetReadHistory($since: LongString!, $first: Int!, $offset: Int!) {
+  chapters(
+    filter: {lastReadAt: {greaterThan: $since}}
+    orderBy: LAST_READ_AT
+    orderByType: DESC
+    first: $first
+    offset: $offset
+  ) {
+    nodes {
+      ...ChapterWithMangaFragment
+    }
+    pageInfo {
+      hasNextPage
+    }
+  }
+}

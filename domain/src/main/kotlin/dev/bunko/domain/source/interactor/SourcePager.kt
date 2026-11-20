@@ -1,0 +1,104 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
+package dev.bunko.domain.source.interactor
+
+import dev.bunko.domain.ServerListeners
+import dev.bunko.domain.manga.interactor.GetManga
+import dev.bunko.domain.manga.model.Manga
+import dev.bunko.domain.source.model.MangaPage
+import com.diamondedge.logging.logging
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.runningFold
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import me.tatarka.inject.annotations.Assisted
+import me.tatarka.inject.annotations.Inject
+
+fun interface GetMangaPage {
+    suspend fun get(page: Int): MangaPage?
+}
+
+@Inject
+class SourcePager(
+    private val getManga: GetManga,
+    private val serverListeners: ServerListeners,
+    @Assisted private val fetcher: GetMangaPage,
+) : CoroutineScope by CoroutineScope(Dispatchers.Default + SupervisorJob()) {
+    private val sourceMutex = Mutex()
+
+    private val sourceManga = MutableStateFlow<List<Manga>>(emptyList())
+
+    private val mangaIds = sourceManga.map { mangas -> mangas.map { it.id } }
+        .stateIn(this, SharingStarted.Eagerly, emptyList())
+
+    private val changedManga =
+        serverListeners.mangaListener.runningFold(emptyMap<Long, Manga>()) { manga, updatedMangaIds ->
+            coroutineScope {
+                manga + updatedMangaIds.filter { it in mangaIds.value }.map {
+                    async {
+                        getManga.await(it)
+                    }
+                }.awaitAll().filterNotNull().associateBy { it.id }
+            }
+        }.stateIn(this, SharingStarted.Eagerly, emptyMap())
+
+    val mangas = combine(sourceManga, changedManga) { sourceManga, changedManga ->
+        sourceManga.map { changedManga[it.id] ?: it }
+    }.stateIn(this, SharingStarted.Eagerly, emptyList())
+
+    private val _pageNum = MutableStateFlow(0)
+    val pageNum = _pageNum.asStateFlow()
+
+    private val _hasNextPage = MutableStateFlow(true)
+    val hasNextPage = _hasNextPage.asStateFlow()
+
+    private val _loading = MutableStateFlow(true)
+    val loading = _loading.asStateFlow()
+
+    private val _pageFailed = MutableStateFlow(false)
+    val pageFailed = _pageFailed.asStateFlow()
+
+    fun loadNextPage() {
+        launch {
+            if (hasNextPage.value && sourceMutex.tryLock()) {
+                try {
+                    if (sourceManga.value.isEmpty()) _loading.value = true
+                    _pageFailed.value = false
+                    _pageNum.value++
+                    val page = fetcher.get(_pageNum.value)
+                    if (page != null) {
+                        val fresh = page.mangaList.associateBy { it.id }
+                        val known = sourceManga.value.mapTo(HashSet()) { it.id }
+                        sourceManga.value = sourceManga.value.map { fresh[it.id] ?: it } + fresh.values.filter { it.id !in known }
+                        _hasNextPage.value = page.hasNextPage
+                    } else {
+                        _pageNum.value--
+                        _pageFailed.value = true
+                    }
+                } finally {
+                    sourceMutex.unlock()
+                }
+            }
+            _loading.value = false
+        }
+    }
+
+    companion object {
+        private val log = logging()
+    }
+}

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_add">ወስኽ</string>
+    <string name="edit_categories">ምድባት</string>
+    <string name="settings_appearance">ትርኢት</string>
+    <string name="basic_auth">መሰረታዊ ምርግጋፅ</string>
+    <string name="settings_advanced">ምዕቡል</string>
+    <string name="auth_password">መሕለፍቃል ምርግጋፅ</string>
+    <string name="settings_backup_screen">መሐለውታ ስንድኦታት</string>
+    <string name="all">ኩሉ</string>
+    <string name="settings_appearance_screen">ትርኢት ስንድኦታት</string>
+    <string name="auth_username">ስም-ተጠቃሚ ምርግጋፅ</string>
+    <string name="action_close">ዕፆ</string>
+    <string name="status_completed">ተፈፂሙ</string>
+    <string name="action_cancel">ሰርዝ</string>
+    <string name="location_categories">ምድባት</string>
+    <string name="settings_advanced_screen">ምዕቡል ስንድኦታት</string>
+</resources>
