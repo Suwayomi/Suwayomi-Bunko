@@ -2,7 +2,7 @@
 
 all notable changes to bunko, newest first.
 
-## 1.1.0 — unreleased
+## 1.1.0
 
 updates in place over 1.0.0; your settings carry over untouched.
 
