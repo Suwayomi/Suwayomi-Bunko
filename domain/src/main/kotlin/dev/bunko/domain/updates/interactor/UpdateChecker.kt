@@ -64,7 +64,7 @@ class UpdateChecker(
     }
 
     companion object {
-        private const val GITHUB_REPO = "melu/bunko"
+        private const val GITHUB_REPO = "Suwayomi/Suwayomi-Bunko"
 
         val RELEASE_URL = "https://github.com/$GITHUB_REPO/releases/tag/v${BuildConfig.VERSION}"
 
