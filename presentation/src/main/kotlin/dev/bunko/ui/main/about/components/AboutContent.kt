@@ -217,7 +217,7 @@ enum class Link(
     val icon: LinkIcon,
     val uri: String,
 ) {
-    Github(MR.strings.github, LinkIcon.Resource(MR.images.github), "https://github.com/melu/bunko"),
+    Github(MR.strings.github, LinkIcon.Resource(MR.images.github), "https://github.com/Suwayomi/Suwayomi-Bunko"),
 }
 
 @Composable

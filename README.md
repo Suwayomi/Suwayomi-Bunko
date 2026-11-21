@@ -26,7 +26,7 @@
 
 ## install / building
 
-grab the latest apk from [releases](https://github.com/tristitious/bunko/releases), or build it yourself:
+grab the latest apk from [releases](https://github.com/Suwayomi/Suwayomi-Bunko/releases), or build it yourself:
 
 ```bash
 git clone https://github.com/Suwayomi/Suwayomi-Bunko.git
