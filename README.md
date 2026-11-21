@@ -40,9 +40,9 @@ the apk outputs to `android/build/outputs/apk/release/android-release.apk`.
 
 - **[suwayomi-jui](https://github.com/Suwayomi/Suwayomi-JUI)** — primary graphql client & compose foundation
 - **[suwayomi-tsumiru](https://github.com/Suwayomi/Suwayomi-Tsumiru)** — ui & feature inspiration
-- **[komikku](https://github.com/komikku-app/komikku)** — reader & cover-accent design cues
+- **[komikku](https://github.com/komikku-app/komikku)** — reader & cover-accent design cues; bottom navigation icon animations (Apache-2.0, see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md))
 - **[suwayomi-server](https://github.com/Suwayomi/Suwayomi-Server)** — backend server
 
 ## license
 
-[LICENSE](LICENSE)
+[LICENSE](LICENSE). Third-party material and its licenses: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.withIndex
 import kotlinx.coroutines.launch
 import me.tatarka.inject.annotations.Inject
 
@@ -47,14 +48,16 @@ class ServerListeners {
 
     fun <T> combineMangaUpdates(
         flow: Flow<T>,
+        cached: Flow<T>? = null,
         predate: (suspend (List<Long>) -> Boolean)? = null,
     ) = merge(
         if (predate != null) _mangaListener.filter(predate) else _mangaListener,
         libraryListener,
     )
         .startWith(Unit)
+        .withIndex()
         .buffer(capacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-        .flatMapLatest { flow }
+        .flatMapLatest { (index, _) -> if (index == 0 && cached != null) cached else flow }
 
     fun updateManga(ids: List<Long>) {
         val ids = ids.filter { id -> id >= 0 }
@@ -78,6 +81,7 @@ class ServerListeners {
 
     fun <T> combineCategoryManga(
         flow: Flow<T>,
+        cached: Flow<T>? = null,
         predate: (suspend (Long) -> Boolean)? = null,
         holdsManga: (suspend (List<Long>) -> Boolean)? = null,
     ) = merge(
@@ -86,8 +90,9 @@ class ServerListeners {
         libraryListener,
     )
         .startWith(Unit)
+        .withIndex()
         .buffer(capacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-        .flatMapLatest { flow }
+        .flatMapLatest { (index, _) -> if (index == 0 && cached != null) cached else flow }
 
     fun updateCategoryManga(id: Long) {
         scope.launch {

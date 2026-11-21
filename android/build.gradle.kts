@@ -33,6 +33,7 @@ plugins {
     id(libs.plugins.ksp.get().pluginId)
     id(libs.plugins.compose.get().pluginId)
     id(libs.plugins.aboutLibraries.get().pluginId)
+    id(libs.plugins.baselineprofile.get().pluginId)
 }
 
 dependencies {
@@ -47,6 +48,8 @@ dependencies {
     implementation(libs.lifecycle.process)
     implementation(libs.lifecycle.runtime)
     implementation(libs.apollo.runtime)
+    implementation(libs.androidx.profileinstaller)
+    baselineProfile(projects.baselineprofile)
 
     ksp(libs.kotlinInject.compiler)
 }
@@ -99,6 +102,10 @@ android {
     }
 }
 
+androidComponents {
+    onVariants(selector().withBuildType("nonMinifiedRelease")) { it.applicationId.set("dev.bunko.android.profiling") }
+    onVariants(selector().withBuildType("benchmarkRelease")) { it.applicationId.set("dev.bunko.android.profiling") }
+}
 
 aboutLibraries {
     library {

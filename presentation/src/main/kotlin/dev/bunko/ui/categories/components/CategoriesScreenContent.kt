@@ -115,7 +115,7 @@ fun CategoriesScreenContent(
                     ),
                 ).asPaddingValues(),
             ) {
-                itemsIndexed(categories) { i, category ->
+                itemsIndexed(categories, key = { _, c -> c.id ?: "order-${c.order}" },contentType = { _, _ -> "category" }) { i, category ->
                     val renameDialogState = rememberDialogState()
                     val deleteDialogState = rememberDialogState()
                     CategoryRow(

@@ -17,13 +17,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils
 import com.diamondedge.logging.logging
 import dev.bunko.domain.manga.model.Manga
 import dev.bunko.ui.manga.accent.CoverAccents
+import dev.bunko.uicore.theme.atTone
+import dev.bunko.uicore.theme.tone
 
 private val log = logging()
 
@@ -115,14 +116,17 @@ private fun ColorScheme.withAccent(
     accent: Color,
     background: Color,
 ): ColorScheme {
-    val container = lerp(background, accent, 0.28f)
+    val dark = background.tone() < 50
+    val container = accent.atTone(if (dark) 30.0 else 90.0)
+    val onContainer = accent.atTone(if (dark) 90.0 else 10.0)
     return copy(
         primary = accent,
         onPrimary = readableOn(accent),
         primaryContainer = container,
-        onPrimaryContainer = readableOn(container),
+        onPrimaryContainer = onContainer,
         secondaryContainer = container,
-        onSecondaryContainer = readableOn(container),
+        onSecondaryContainer = onContainer,
+        surfaceTint = accent,
     )
 }
 

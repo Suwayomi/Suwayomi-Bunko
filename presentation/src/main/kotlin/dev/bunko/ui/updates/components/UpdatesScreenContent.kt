@@ -47,7 +47,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -83,7 +82,8 @@ import dev.bunko.ui.updates.UpdatesUI
 import dev.bunko.uicore.components.BottomActionItem
 import dev.bunko.uicore.components.BottomActionMenu
 import dev.bunko.uicore.components.EmptyScreen
-import dev.bunko.uicore.components.LoadingScreen
+import dev.bunko.uicore.components.RefreshBox
+import dev.bunko.uicore.components.SkeletonList
 import dev.bunko.uicore.components.VerticalScrollbar
 import dev.bunko.uicore.components.rememberScrollbarAdapter
 import dev.bunko.uicore.resources.stringResource
@@ -204,7 +204,7 @@ fun UpdatesScreenContent(
     ) {
         Box(Modifier.fillMaxSize().padding(it)) {
             if (isLoading) {
-                LoadingScreen()
+                SkeletonList(coverHeight = 56.dp, lines = 2)
             } else if (updates.isEmpty() && downloadQueue.isEmpty() && deviceSaving == 0) {
                 EmptyScreen(
                     message = stringResource(MR.strings.updates_empty),
@@ -215,7 +215,7 @@ fun UpdatesScreenContent(
             } else {
                 val state = rememberLazyListState()
                 val headerCounts = remember(updates) { updates.countsPerHeader() }
-                PullToRefreshBox(isRefreshing = isRefreshing, onRefresh = onRefresh) {
+                RefreshBox(isRefreshing = isRefreshing, onRefresh = onRefresh) {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         state = state,
@@ -235,13 +235,14 @@ fun UpdatesScreenContent(
                                     DateHeader(formatUpdatesDate(item.date), headerCounts[index] ?: 0)
                                 }
 
-                                is UpdatesUI.Item -> item(contentType = "update") {
+                                is UpdatesUI.Item -> item(key = "update-${item.chapterDownloadItem.chapter.id}", contentType = "update") {
                                     if (index == updates.lastIndex) {
                                         LaunchedEffect(Unit) { loadNextPage() }
                                     }
                                     val manga = item.chapterDownloadItem.manga!!
                                     val chapter = item.chapterDownloadItem.chapter
                                     UpdatesItem(
+                                        modifier = Modifier.animateItem(),
                                         chapterDownloadItem = item.chapterDownloadItem,
                                         onDevice = onDevice(chapter.id),
                                         onOpen = { openChapter(chapter.id, manga.id) },

@@ -31,7 +31,7 @@ fun parseFallbackOrigin(
     val typedScheme = "://" in trimmed
     val url = (if (typedScheme) trimmed else "$primaryScheme://$trimmed").toHttpUrlOrNull() ?: return null
     val inheritPort = !hasExplicitPort(trimmed) && (!typedScheme || url.scheme == primaryScheme)
-    return url.origin(if (inheritPort) primaryPort else url.port)
+    return url.origin(if (inheritPort && primaryPort in 1..65535) primaryPort else url.port)
 }
 
 internal fun hasExplicitPort(address: String): Boolean {
@@ -63,14 +63,24 @@ internal class ServerFailover(
             } catch (e: IOException) {
                 if (!e.isUnreachable()) throw e
                 log.info { "Primary server unreachable (${e.message}), switching to fallback" }
-                chain.proceed(request.to(fallback)).also { onFallbackSince = TimeSource.Monotonic.markNow() }
+                val response = try {
+                    chain.proceed(request.to(fallback))
+                } catch (f: IOException) {
+                    throw FailoverException(primary = e, fallback = f)
+                }
+                response.also { onFallbackSince = TimeSource.Monotonic.markNow() }
             }
         } else {
             try {
                 chain.proceed(request.to(fallback))
             } catch (e: IOException) {
                 if (!e.isUnreachable()) throw e
-                tryPrimary(chain, request).also { onFallbackSince = null }
+                val response = try {
+                    tryPrimary(chain, request)
+                } catch (p: IOException) {
+                    throw FailoverException(primary = p, fallback = e)
+                }
+                response.also { onFallbackSince = null }
             }
         }
     }
@@ -88,6 +98,11 @@ internal class ServerFailover(
         val log = logging()
     }
 }
+
+internal class FailoverException(
+    primary: IOException,
+    fallback: IOException,
+) : IOException(listOfNotNull(primary.message, fallback.message).joinToString("\n"), fallback)
 
 private fun IOException.isUnreachable() =
     this is ConnectException ||

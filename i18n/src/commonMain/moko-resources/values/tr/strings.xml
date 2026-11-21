@@ -76,7 +76,6 @@
     <string name="group_downloader">İndirici</string>
     <string name="failed_manga_fetch">Manga yüklenemedi</string>
     <string name="theme_default">Varsayılan</string>
-    <string name="theme_green_apple">Yeşil elma</string>
     <string name="color_secondary_sub">Aksanlar, kullanıcı arayüzünün belirli bölümlerini vurgular</string>
     <string name="display_cover_only">Sadecek kapak fotoğraflı ızgara</string>
     <string name="scale_fit_screen">Ekrana sığdır</string>
@@ -140,7 +139,6 @@
     <string name="settings_library_screen">Kütüphane Ayarları</string>
     <string name="group_library">Kütüphane</string>
     <string name="move_to_latest">En son</string>
-    <string name="theme_lavender">Lavender</string>
     <string name="library_empty">Kütüphane boş</string>
     <string name="location_library">Kütüphane</string>
     <string name="status_licensed">Lisanslı</string>
@@ -161,7 +159,6 @@
     <string name="update_check_no_new_updates">Yeni bir güncelleme yok</string>
     <string name="max_height">Maksimum yükseklik</string>
     <string name="navigation_mode">Navigasyon modu</string>
-    <string name="theme_legacy_blue">Legacy Blue</string>
     <string name="display_list">Liste</string>
     <string name="nav_l_shaped">L-şekilli</string>
     <string name="no_auth">Auth yok</string>
@@ -182,6 +179,5 @@
     <string name="nav_next_chapter">Sıradaki bölüm</string>
     <string name="max_sources_parallel">Paralel olarak kullanılacak maksimum kaynak sayısı</string>
     <string name="max_width_sub">Resmin maksimum genişliği. Şu anda %1$d dp. Yukarıdaki ayar resimleri belirtilen genişlik kadar olacak şekilde büyütür</string>
-    <string name="theme_midnight_dusk">Gece karanlığı</string>
     <string name="obsolete">Geçersiz</string>
 </resources>

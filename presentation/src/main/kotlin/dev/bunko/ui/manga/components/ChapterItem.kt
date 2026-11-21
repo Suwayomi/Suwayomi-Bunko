@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -109,10 +110,12 @@ fun ChapterItem(
                     color = onSurface.copy(alpha = if (chapter.read) DisabledAlpha else 1f),
                 )
             }
-            val details = listOfNotNull(
-                chapter.uploadDate.takeIf { it > 0 }?.let { format(Instant.fromEpochMilliseconds(it)) },
-                chapter.scanlator?.takeIf { it.isNotBlank() },
-            ).joinToString(" • ")
+            val details = remember(chapter.uploadDate, chapter.scanlator, format) {
+                listOfNotNull(
+                    chapter.uploadDate.takeIf { it > 0 }?.let { format(Instant.fromEpochMilliseconds(it)) },
+                    chapter.scanlator?.takeIf { it.isNotBlank() },
+                ).joinToString(" • ")
+            }
             if (inProgress || details.isNotEmpty()) {
                 val subtitleColor: Color = onSurface.copy(alpha = if (chapter.read) DisabledAlpha else SecondaryAlpha)
                 Row {

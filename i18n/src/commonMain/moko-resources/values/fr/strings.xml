@@ -214,18 +214,7 @@
     <string name="group_library">Bibliothèque</string>
     <string name="notification_updating">Mise à jour de la bibliothèque… (%1$d/%2$d)</string>
     <string name="theme_default">Défaut</string>
-    <string name="theme_legacy_blue">Bleu héritage</string>
-    <string name="theme_amoled">AMOLED</string>
-    <string name="theme_green_apple">Pomme verte</string>
-    <string name="theme_lavender">Lavande</string>
-    <string name="theme_midnight_dusk">Crépuscule de minuit</string>
-    <string name="theme_strawberry_daiquiri">Daiquiri aux fraises</string>
-    <string name="theme_tako">Tako</string>
-    <string name="theme_tealturquoise">Sarcelle et Turquoise</string>
-    <string name="theme_tidal_wave">Raz-de-marée</string>
     <string name="color_tertiary">Tertiaire</string>
-    <string name="theme_yinyang">Yin &amp; Yang</string>
-    <string name="theme_yotsuba">Yotsuba</string>
     <string name="downloads_paused">En pause</string>
     <string name="previous_chapter">Précédent:
 \n %1$s</string>

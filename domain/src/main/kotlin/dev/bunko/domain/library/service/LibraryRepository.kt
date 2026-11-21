@@ -7,6 +7,7 @@
 package dev.bunko.domain.library.service
 
 import dev.bunko.domain.schedule.ReleaseHistory
+import dev.bunko.domain.library.model.LibraryStatistics
 import dev.bunko.domain.library.model.UpdaterJobsInfo
 import kotlinx.coroutines.flow.Flow
 
@@ -18,4 +19,6 @@ interface LibraryRepository {
     fun libraryUpdateSubscription(): Flow<UpdaterJobsInfo>
 
     fun getReleaseHistory(since: Long): Flow<List<ReleaseHistory>>
+
+    fun getStatistics(): Flow<LibraryStatistics>
 }

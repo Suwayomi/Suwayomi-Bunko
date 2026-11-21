@@ -6,6 +6,7 @@
 
 package dev.bunko.domain.discord
 
+import dev.bunko.core.lang.throwIfCancellation
 import com.diamondedge.logging.logging
 import dev.bunko.domain.discord.model.GatewayMessage
 import dev.bunko.domain.discord.model.Identify
@@ -141,7 +142,7 @@ internal class DiscordGateway(
                         OpCode.HEARTBEAT_ACK -> ackPending = false
                     }
                 }
-                if (!leaving && runCatching { closeReason.await() }.getOrNull()?.code == AUTH_FAILED) {
+                if (!leaving && runCatching { closeReason.await() }.throwIfCancellation().getOrNull()?.code == AUTH_FAILED) {
                     end = SessionEnd.AuthFailed
                 }
             } finally {

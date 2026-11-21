@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.bunko.core.lang.launchIO
+import dev.bunko.domain.server.interactor.DetectServerPort
 import dev.bunko.domain.server.ConnectionError
 import dev.bunko.domain.server.credentialOrigins
 import dev.bunko.domain.server.isNetwork
@@ -105,6 +106,7 @@ class SettingsServerScreen : Screen {
 @Inject
 class SettingsServerViewModel(
     private val aboutServer: AboutServer,
+    private val detectServerPort: DetectServerPort,
     private val getSettings: GetSettings,
     private val setSettings: SetSettings,
     serverPreferences: ServerPreferences,
@@ -119,7 +121,9 @@ class SettingsServerViewModel(
     private val serverPathPrefix = serverPreferences.pathPrefix().asStateIn(scope)
     private val serverFallback = serverPreferences.fallbackServer().asStateIn(scope)
 
-    val serverAddress = combine(serverUrl, serverPort, serverPathPrefix, serverFallback, ::ServerAddress)
+    val serverAddress = combine(serverUrl, serverPort, serverPathPrefix, serverFallback) { url, port, prefix, fallback ->
+        ServerAddress(url, port.toPortField(), prefix, fallback)
+    }
         .stateIn(scope, SharingStarted.Eagerly, currentAddress())
 
     val proxy = serverPreferences.proxy().asStateIn(scope)
@@ -175,21 +179,31 @@ class SettingsServerViewModel(
         )
 
     fun saveAddress(address: ServerAddress) {
-        val port = address.portNumber ?: return
+        val typedPort = address.portNumber ?: return
         val url = address.url.trim()
+        val pathPrefix = address.pathPrefix.trim()
         val fallback = address.fallback.trim()
-        val before = credentialOrigins(serverUrl.value, serverPort.value.toIntOrNull() ?: 0, serverFallback.value)
-        val moved = credentialOrigins(url, port, fallback).movedFrom(before)
         scope.launch {
+            val port = if (typedPort == 0) {
+                _connection.value = ConnectionStatus.Checking
+                detectServerPort.await(url, pathPrefix) ?: 0
+            } else {
+                typedPort
+            }
+            val before = credentialOrigins(serverUrl.value, serverPort.value.toIntOrNull() ?: 0, serverFallback.value)
+            val moved = credentialOrigins(url, port, fallback).movedFrom(before)
             // clear before saving, so no request ever pairs the new host with the old credentials
             if (moved) signOutForAddressChange()
             serverUrl.value = url
             serverPort.value = port.toString()
-            serverPathPrefix.value = address.pathPrefix.trim()
+            serverPathPrefix.value = pathPrefix
             serverFallback.value = fallback
             requestCheck()
         }
     }
+
+    private fun missingCredentials() =
+        auth.value in SIGN_IN_AUTH && !hasSession.value && authPassword.value.isEmpty()
 
     private suspend fun signOutForAddressChange() {
         val wasSignedIn = hasSession.value || authPassword.value.isNotEmpty()
@@ -241,7 +255,7 @@ class SettingsServerViewModel(
                 _connection.value = ConnectionStatus.Connected(about.version)
             } else {
                 val cause = error?.toConnectionError() ?: ConnectionError.Other("Empty response")
-                _connection.value = if (cause is ConnectionError.Unauthorized) {
+                _connection.value = if (cause is ConnectionError.Unauthorized || (!cause.isNetwork && missingCredentials())) {
                     ConnectionStatus.SignInRequired(cause)
                 } else {
                     ConnectionStatus.Failed(cause)
@@ -300,7 +314,9 @@ class SettingsServerViewModel(
         _serverSettings.value = create(child)
     }
 
-    private fun currentAddress() = ServerAddress(serverUrl.value, serverPort.value, serverPathPrefix.value, serverFallback.value)
+    private fun currentAddress() = ServerAddress(serverUrl.value, serverPort.value.toPortField(), serverPathPrefix.value, serverFallback.value)
+
+    private fun String.toPortField() = takeUnless { it == "0" }.orEmpty()
 
     init {
         val connectionPrefs = listOf<Flow<Any>>(
@@ -328,6 +344,7 @@ class SettingsServerViewModel(
 
     private companion object {
         val CLIENT_REBUILD_SETTLE = 400.milliseconds
+        val SIGN_IN_AUTH = setOf(Auth.UI, Auth.SIMPLE)
     }
 }
 

@@ -99,10 +99,14 @@ class ExtensionsScreenViewModel(
         }
     }
 
-    fun install(source: Source) {
+    fun install(
+        source: Source,
+        fileName: String?,
+    ) {
         log.info { "Install file clicked" }
         scope.launch {
-            val file = FileSystem.SYSTEM_TEMPORARY_DIRECTORY.resolve("bunko.${Random.nextLong()}.apk")
+            val type = if (fileName?.endsWith(".jar", ignoreCase = true) == true) "jar" else "apk"
+            val file = FileSystem.SYSTEM_TEMPORARY_DIRECTORY.resolve("bunko.${Random.nextLong()}.$type")
             try {
                 source.saveTo(file)
                 installExtensionFile.await(file, onError = { toast(it.userMessage.toPlatformString()) })

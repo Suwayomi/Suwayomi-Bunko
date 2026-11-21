@@ -7,13 +7,17 @@
 package dev.bunko.ui.main.components
 
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.animation.graphics.res.animatedVectorResource
+import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
+import androidx.compose.animation.graphics.vector.AnimatedImageVector
+import dev.bunko.presentation.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -80,11 +84,12 @@ fun WithBottomNav(
             LocalBottomNavHider provides hider,
             content = content,
         )
-        AnimatedVisibility(
-            isBottomNavVisible,
-            enter = slideInVertically(initialOffsetY = { it }),
-            exit = slideOutVertically(targetOffsetY = { it }),
-            modifier = Modifier.align(Alignment.BottomCenter),
+        val slide by animateFloatAsState(if (isBottomNavVisible) 0f else 1f, label = "bottomNavSlide")
+        Box(
+            Modifier
+                .align(Alignment.BottomCenter)
+                .graphicsLayer { translationY = size.height * slide }
+                .then(if (!isBottomNavVisible && slide >= 1f) Modifier.clearAndSetSemantics { } else Modifier),
         ) {
             BottomNav(navigator)
         }
@@ -102,12 +107,7 @@ fun BottomNav(navigator: Navigator) {
                 onClick = {
                     if (!isSelected) navigator replace it.createScreen()
                 },
-                icon = {
-                    Icon(
-                        imageVector = if (isSelected) it.selectedIcon else it.unselectedIcon,
-                        contentDescription = title,
-                    )
-                },
+                icon = { AnimatedNavIcon(it, isSelected, title) },
                 label = {
                     Text(
                         text = title,
@@ -146,4 +146,23 @@ fun NavigationBar(
             content = content,
         )
     }
+}
+
+private val TopLevelMenus.enterAnimation: Int
+    get() = when (this) {
+        TopLevelMenus.Library -> R.drawable.anim_nav_library
+        TopLevelMenus.History -> R.drawable.anim_nav_history
+        TopLevelMenus.Schedule -> R.drawable.anim_nav_schedule
+        TopLevelMenus.Browse -> R.drawable.anim_nav_browse
+        TopLevelMenus.More -> R.drawable.anim_nav_more
+    }
+
+@Composable
+private fun AnimatedNavIcon(
+    menu: TopLevelMenus,
+    selected: Boolean,
+    contentDescription: String,
+) {
+    val image = AnimatedImageVector.animatedVectorResource(menu.enterAnimation)
+    Icon(rememberAnimatedVectorPainter(image, atEnd = selected), contentDescription = contentDescription)
 }

@@ -52,7 +52,8 @@ import dev.bunko.ui.extensions.ExtensionUI
 import dev.bunko.ui.main.components.bottomNav
 import dev.bunko.ui.sources.components.SourceStatusChip
 import dev.bunko.uicore.components.EmptyScreen
-import dev.bunko.uicore.components.LoadingScreen
+import dev.bunko.uicore.components.LoadStateCrossfade
+import dev.bunko.uicore.components.SkeletonList
 import dev.bunko.uicore.components.VerticalScrollbar
 import dev.bunko.uicore.components.rememberScrollbarAdapter
 import dev.bunko.uicore.image.ImageLoaderImage
@@ -76,8 +77,21 @@ fun ExtensionsScreenContent(
     updateExtension: (Extension) -> Unit,
     uninstallExtension: (Extension) -> Unit,
 ) {
-    if (isLoading) {
-        LoadingScreen()
+    LoadStateCrossfade(isLoading, contentKey = { it }) { loading ->
+        ExtensionsList(loading, extensions, installExtension, updateExtension, uninstallExtension)
+    }
+}
+
+@Composable
+private fun ExtensionsList(
+    loading: Boolean,
+    extensions: ImmutableList<ExtensionUI>,
+    installExtension: (Extension) -> Unit,
+    updateExtension: (Extension) -> Unit,
+    uninstallExtension: (Extension) -> Unit,
+) {
+    if (loading) {
+        SkeletonList(coverHeight = 44.dp, lines = 2, coverAspectRatio = 1f, coverShape = RoundedCornerShape(10.dp))
     } else if (extensions.isEmpty()) {
         EmptyScreen(stringResource(MR.strings.extensions_empty), icon = Icons.Outlined.Extension)
     } else {

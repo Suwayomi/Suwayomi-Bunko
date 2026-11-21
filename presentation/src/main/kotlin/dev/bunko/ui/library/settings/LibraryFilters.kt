@@ -25,9 +25,13 @@ fun getLibraryFilters(vm: LibrarySettingsViewModel): @Composable () -> Unit =
                 downloaded = vm.filterDownloaded.collectAsState().value,
                 unread = vm.filterUnread.collectAsState().value,
                 completed = vm.filterCompleted.collectAsState().value,
+                started = vm.filterStarted.collectAsState().value,
+                bookmarked = vm.filterBookmarked.collectAsState().value,
                 setDownloadedFilter = { vm.filterDownloaded.value = it },
                 setUnreadFilter = { vm.filterUnread.value = it },
                 setCompletedFilter = { vm.filterCompleted.value = it },
+                setStartedFilter = { vm.filterStarted.value = it },
+                setBookmarkedFilter = { vm.filterBookmarked.value = it },
             )
         }
     }
@@ -37,13 +41,19 @@ fun LibraryFilters(
     downloaded: FilterState,
     unread: FilterState,
     completed: FilterState,
+    started: FilterState,
+    bookmarked: FilterState,
     setDownloadedFilter: (FilterState) -> Unit,
     setUnreadFilter: (FilterState) -> Unit,
     setCompletedFilter: (FilterState) -> Unit,
+    setStartedFilter: (FilterState) -> Unit,
+    setBookmarkedFilter: (FilterState) -> Unit,
 ) {
     Column(Modifier.fillMaxWidth()) {
         TriStateItem(stringResource(MR.strings.filter_downloaded), downloaded, setDownloadedFilter)
         TriStateItem(stringResource(MR.strings.filter_unread), unread, setUnreadFilter)
+        TriStateItem(stringResource(MR.strings.filter_started), started, setStartedFilter)
+        TriStateItem(stringResource(MR.strings.filter_bookmarked), bookmarked, setBookmarkedFilter)
         TriStateItem(stringResource(MR.strings.filter_completed), completed, setCompletedFilter)
     }
 }

@@ -11,6 +11,7 @@ import dev.bunko.domain.discord.DiscordPresence
 import dev.bunko.domain.discord.service.DiscordPreferences
 import dev.bunko.core.CoreComponent
 import dev.bunko.core.di.AppScope
+import dev.bunko.domain.server.ServerReachability
 import dev.bunko.domain.download.service.DownloadService
 import dev.bunko.domain.extension.service.ExtensionPreferences
 import dev.bunko.domain.library.service.LibraryPreferences
@@ -66,6 +67,8 @@ interface SharedDomainComponent : CoreComponent {
     val updatePreferences: UpdatePreferences
 
     val serverListeners: ServerListeners
+
+    val serverReachability: ServerReachability
 
     val serverSubscriptions: ServerSubscriptions
 

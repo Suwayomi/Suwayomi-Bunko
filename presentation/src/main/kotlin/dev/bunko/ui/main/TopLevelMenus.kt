@@ -23,6 +23,9 @@ import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.PhoneAndroid
+import androidx.compose.material.icons.outlined.QueryStats
+import androidx.compose.material.icons.rounded.QueryStats
+import dev.bunko.ui.statistics.StatisticsScreen
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import dev.bunko.i18n.MR
@@ -119,5 +122,6 @@ enum class MoreMenus(
         DownloadsScreen()
     }, extraInfo = { DownloadsExtraInfo() }),
     Offline(MR.strings.more_offline_chapters, Icons.Outlined.PhoneAndroid, Icons.Rounded.PhoneAndroid, OfflineScreen::class, { OfflineScreen() }),
+    Statistics(MR.strings.location_statistics, Icons.Outlined.QueryStats, Icons.Rounded.QueryStats, StatisticsScreen::class, { StatisticsScreen() }),
     About(MR.strings.location_about, Icons.Outlined.Info, Icons.Rounded.Info, AboutScreen::class, { AboutScreen() }),
 }

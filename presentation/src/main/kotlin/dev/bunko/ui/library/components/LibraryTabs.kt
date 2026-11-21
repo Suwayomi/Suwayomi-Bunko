@@ -6,6 +6,7 @@
 
 package dev.bunko.ui.library.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,10 +16,8 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -69,6 +68,8 @@ fun LibraryTabs(
     }
 }
 
+private val CountPillShape = RoundedCornerShape(100)
+
 @Composable
 fun CountPill(
     text: String,
@@ -76,16 +77,11 @@ fun CountPill(
     fontSize: TextUnit = 14.sp,
 ) {
     val alpha = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) 0.12f else 0.08f
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(100),
-        color = MaterialTheme.colorScheme.onBackground.copy(alpha = alpha),
-        contentColor = LocalContentColor.current,
-    ) {
-        Text(
-            text = text,
-            fontSize = fontSize,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
-        )
-    }
+    Text(
+        text = text,
+        fontSize = fontSize,
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.onBackground.copy(alpha = alpha), CountPillShape)
+            .padding(horizontal = 6.dp, vertical = 1.dp),
+    )
 }

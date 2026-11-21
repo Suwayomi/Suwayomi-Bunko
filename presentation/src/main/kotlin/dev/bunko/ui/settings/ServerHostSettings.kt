@@ -531,8 +531,8 @@ fun LazyListScope.ServerSettingsItems(serverSettings: ServerSettings) {
     item {
         SwitchPreference(
             preference = serverSettings.flareSolverrEnabled,
-            title = "FlareSolverr enabled",
-            subtitle = "Use a FlareSolverr instance to bypass CloudFlare. Manual setup required",
+            title = stringResource(MR.strings.flaresolverr_enabled),
+            subtitle = stringResource(MR.strings.flaresolverr_enabled_sub),
         )
     }
     item {

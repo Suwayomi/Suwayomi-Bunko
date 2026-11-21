@@ -38,14 +38,17 @@ class ExtensionRepositoryImpl(
                 it.dataAssertNoErrors.fetchExtensions!!.extensions.map { it.extensionFragment.toExtension() }
             }
 
-    override fun installExtension(source: Source): Flow<Unit> =
+    override fun installExtension(
+        source: Source,
+        fileName: String,
+    ): Flow<Unit> =
         apolloClient.mutation(
             InstallExternalExtensionMutation(
                 DefaultUpload.Builder()
                     .content {
                         it.writeAll(source)
                     }
-                    .fileName("extension.apk")
+                    .fileName(fileName)
                     .contentType("application/octet-stream")
                     .build(),
             ),

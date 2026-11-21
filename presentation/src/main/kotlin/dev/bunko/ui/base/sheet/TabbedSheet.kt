@@ -6,6 +6,9 @@
 
 package dev.bunko.ui.base.sheet
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -23,15 +26,21 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import dev.bunko.uicore.resources.stringResource
+import dev.bunko.uicore.theme.BunkoMotion
 import dev.icerock.moko.resources.StringResource
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
@@ -72,13 +81,35 @@ fun TabbedSheet(
             trailing?.invoke()
         }
         HorizontalDivider()
+        val pageHeights = remember { mutableStateMapOf<Int, Int>() }
+        val height = remember { Animatable(0, Int.VectorConverter) }
+        val targetHeight = pageHeights[pagerState.targetPage]
+        LaunchedEffect(targetHeight) {
+            if (targetHeight == null) return@LaunchedEffect
+            if (height.value == 0) {
+                height.snapTo(targetHeight)
+            } else {
+                height.animateTo(targetHeight, tween(BunkoMotion.LONG_MS, easing = BunkoMotion.EmphasizedDecelerate))
+            }
+        }
         HorizontalPager(
             state = pagerState,
+            modifier = Modifier
+                .clipToBounds()
+                .layout { measurable, constraints ->
+                    val placeable = measurable.measure(constraints)
+                    val h = height.value.takeIf { it > 0 }
+                        ?.coerceIn(constraints.minHeight, constraints.maxHeight)
+                        ?: placeable.height
+                    layout(placeable.width, h) { placeable.place(0, 0) }
+                },
+            beyondViewportPageCount = tabs.size,
             verticalAlignment = Alignment.Top,
         ) { page ->
             Column(
                 Modifier
                     .fillMaxWidth()
+                    .onSizeChanged { pageHeights[page] = it.height }
                     .verticalScroll(rememberScrollState())
                     .padding(vertical = 8.dp),
             ) {

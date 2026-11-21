@@ -36,6 +36,8 @@ class LibraryScreen : BaseScreen() {
             settingsVM.filterDownloaded,
             settingsVM.filterUnread,
             settingsVM.filterCompleted,
+            settingsVM.filterStarted,
+            settingsVM.filterBookmarked,
         ).any { it.collectAsState().value != FilterState.IGNORED }
         LibraryScreenContent(
             libraryState = vm.categories.collectAsState().value,

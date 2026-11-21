@@ -44,6 +44,7 @@ dependencies {
     api(compose.ui)
     api(compose.material)
     api(compose.material3)
+    implementation(compose.animationGraphics)
     api(compose("org.jetbrains.compose.ui:ui-util"))
     api(compose.materialIconsExtended)
 

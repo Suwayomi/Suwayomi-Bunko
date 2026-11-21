@@ -14,7 +14,6 @@ import androidx.compose.material.icons.rounded.DoneAll
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.RemoveDone
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import dev.bunko.domain.category.model.Category
 import dev.bunko.i18n.MR
 import dev.bunko.ui.base.dialog.AppDialog
@@ -28,6 +27,19 @@ import dev.bunko.uicore.components.BottomActionMenu
 import dev.bunko.uicore.components.EmptyScreen
 import dev.bunko.uicore.resources.stringResource
 import dev.bunko.ui.base.userMessage
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import dev.bunko.ui.main.components.bottomNav
+import dev.bunko.uicore.theme.BunkoMotion
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -46,6 +58,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -61,7 +75,7 @@ import dev.bunko.ui.library.LibraryState
 import dev.bunko.ui.library.ResumeEntry
 import dev.bunko.ui.library.settings.LibrarySheet
 import dev.bunko.uicore.components.ErrorScreen
-import dev.bunko.uicore.components.LoadingScreen
+import dev.bunko.uicore.components.RefreshBox
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -108,10 +122,13 @@ fun LibraryScreenContent(
     val pagerState = rememberPagerState(selectedCategoryIndex) {
         (libraryState as? LibraryState.Loaded)?.categories?.size ?: 1
     }
-    LaunchedEffect(pagerState.isScrollInProgress to pagerState.currentPage) {
-        if (!pagerState.isScrollInProgress && pagerState.currentPage != selectedCategoryIndex) {
-            onPageChanged(pagerState.currentPage)
-        }
+    val currentSelectedIndex by rememberUpdatedState(selectedCategoryIndex)
+    val currentOnPageChanged by rememberUpdatedState(onPageChanged)
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.isScrollInProgress to pagerState.currentPage }
+            .collect { (scrolling, page) ->
+                if (!scrolling && page != currentSelectedIndex) currentOnPageChanged(page)
+            }
     }
     LaunchedEffect(selectedCategoryIndex) {
         if (pagerState.currentPage != selectedCategoryIndex) {
@@ -123,7 +140,7 @@ fun LibraryScreenContent(
     var anchor by remember { mutableStateOf<Long?>(null) }
     val currentItems: List<Manga> = (libraryState as? LibraryState.Loaded)
         ?.categories
-        ?.getOrNull(pagerState.currentPage)
+        ?.getOrNull(pagerState.settledPage)
         ?.let { category ->
             (getLibraryForPage(category.id).value as? CategoryState.Loaded)?.items?.collectAsState()?.value
         }
@@ -302,6 +319,22 @@ fun ThinLibraryScreenContent(
     updateWebsocketStatus: WebsocketService.Status,
     restartLibraryUpdates: () -> Unit,
 ) {
+    var resumeExpanded by rememberSaveable { mutableStateOf(true) }
+    val collapseResumeOnScroll = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(
+                available: Offset,
+                source: NestedScrollSource,
+            ): Offset {
+                if (available.y < -1f) {
+                    resumeExpanded = false
+                } else if (available.y > 1f) {
+                    resumeExpanded = true
+                }
+                return Offset.Zero
+            }
+        }
+    }
     Scaffold(
         modifier = Modifier.windowInsetsPadding(
             WindowInsets.statusBars.add(
@@ -310,6 +343,22 @@ fun ThinLibraryScreenContent(
         ),
         contentWindowInsets = WindowInsets(0),
         bottomBar = { BottomActionMenu(visible = selection.isNotEmpty(), items = bottomActions) },
+        floatingActionButton = {
+            AnimatedVisibility(
+                visible = resume != null && libraryState is LibraryState.Loaded && query.isBlank() && selection.isEmpty(),
+                enter = scaleIn(tween(BunkoMotion.LONG_MS, easing = BunkoMotion.EmphasizedDecelerate), initialScale = 0.6f) +
+                    fadeIn(tween(BunkoMotion.MEDIUM_MS)),
+                exit = scaleOut(tween(BunkoMotion.MEDIUM_MS, easing = BunkoMotion.EmphasizedAccelerate), targetScale = 0.6f) +
+                    fadeOut(tween(BunkoMotion.MEDIUM_MS)),
+                modifier = Modifier.windowInsetsPadding(
+                    WindowInsets.bottomNav.add(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)),
+                ),
+            ) {
+                val last = remember { ResumeHolder() }
+                resume?.let { last.entry = it }
+                last.entry?.let { ResumeCard(it, expanded = resumeExpanded, onResume = onResume) }
+            }
+        },
         topBar = {
             Column {
                 LibraryToolbar(
@@ -341,13 +390,10 @@ fun ThinLibraryScreenContent(
         },
     ) { padding ->
         Column(Modifier.padding(padding)) {
-            if (resume != null && libraryState is LibraryState.Loaded && query.isBlank()) {
-                ResumeCard(resume, onResume)
-            }
-            Box(Modifier.weight(1f)) {
+            Box(Modifier.weight(1f).nestedScroll(collapseResumeOnScroll)) {
                 when (libraryState) {
                     LibraryState.Loading -> {
-                        LoadingScreen(true)
+                        LibrarySkeleton(displayMode, gridColumns, gridSize)
                     }
 
                     LibraryState.Empty -> EmptyScreen(stringResource(MR.strings.library_empty))
@@ -356,7 +402,7 @@ fun ThinLibraryScreenContent(
                         ErrorScreen(stringResource(libraryState.e.userMessage))
                     }
 
-                    is LibraryState.Loaded -> PullToRefreshBox(isRefreshing = isRefreshing, onRefresh = onRefresh) {
+                    is LibraryState.Loaded -> RefreshBox(isRefreshing = isRefreshing, onRefresh = onRefresh) {
                         LibraryPager(
                             pagerState = pagerState,
                             categories = libraryState.categories,
@@ -392,4 +438,8 @@ fun ThinLibraryScreenContent(
             )
         }
     }
+}
+
+private class ResumeHolder {
+    var entry: ResumeEntry? = null
 }

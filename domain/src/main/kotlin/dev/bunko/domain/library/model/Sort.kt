@@ -22,4 +22,16 @@ enum class Sort(
     UNREAD(MR.strings.sort_unread),
 
     DATE_ADDED(MR.strings.sort_date_added),
+
+    LAST_READ(MR.strings.sort_last_read),
+
+    LATEST_CHAPTER(MR.strings.sort_latest_chapter),
+
+    LATEST_FETCHED(MR.strings.sort_latest_fetched),
+
+    LAST_UPDATE_CHECK(MR.strings.sort_last_update_check),
+
+    TOTAL_CHAPTERS(MR.strings.sort_total_chapters),
+
+    DOWNLOADED(MR.strings.sort_downloaded),
 }

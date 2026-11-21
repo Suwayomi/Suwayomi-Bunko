@@ -10,6 +10,7 @@ import dev.bunko.data.graphql.SetMangaMetaMutation
 import dev.bunko.data.graphql.fragment.LibraryMangaFragment
 import dev.bunko.data.graphql.fragment.MangaFragment
 import dev.bunko.data.source.SourceRepositoryImpl.Companion.toSource
+import dev.bunko.data.util.toFlowWithCache
 import dev.bunko.domain.chapter.model.ChapterListOptions
 import dev.bunko.domain.manga.model.Manga
 import dev.bunko.domain.manga.model.MangaMeta
@@ -39,11 +40,14 @@ class MangaRepositoryImpl(
     val apolloClient: ApolloClient
         get() = apolloAppClient.value
 
-    override fun getManga(mangaId: Long): Flow<Manga> =
+    override fun getManga(
+        mangaId: Long,
+        cacheFirst: Boolean,
+    ): Flow<Manga> =
         apolloClient.query(
             GetMangaQuery(mangaId.toInt()),
         )
-            .toFlow()
+            .toFlowWithCache(cacheFirst)
             .map {
                 val data = it.dataAssertNoErrors
                 data.manga.mangaFragment.toManga()
@@ -215,6 +219,10 @@ class MangaRepositoryImpl(
                 lastChapterReadTime = lastReadChapter?.lastReadAt ?: 0,
                 age = age,
                 chaptersAge = null,
+                bookmarkCount = bookmarkCount,
+                latestUploadAt = latestUploadedChapter?.uploadDate,
+                latestFetchAt = latestFetchedChapter?.fetchedAt,
+                lastReadAt = maxOf(latestReadChapter?.lastReadAt ?: 0, lastReadChapter?.lastReadAt ?: 0).takeIf { it > 0 },
             )
     }
 }

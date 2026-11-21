@@ -34,7 +34,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import dev.bunko.i18n.MR
-import dev.bunko.ui.base.file.rememberFileChooser
+import dev.bunko.ui.base.file.rememberNamedFileChooser
 import dev.bunko.ui.base.navigation.ActionItem
 import dev.bunko.ui.base.navigation.Toolbar
 import dev.bunko.ui.base.screen.BaseScreen
@@ -65,7 +65,7 @@ class BrowseScreen(
 
         val sourcesLanguageDialog = rememberDialogState()
         val extensionsLanguageDialog = rememberDialogState()
-        val chooser = rememberFileChooser(extensionsVm::install)
+        val chooser = rememberNamedFileChooser(extensionsVm::install)
 
         val pagerState = rememberPagerState(initialTab) { 2 }
         val scope = rememberCoroutineScope()
@@ -117,7 +117,7 @@ class BrowseScreen(
                                         ActionItem(
                                             stringResource(MR.strings.action_install),
                                             Icons.Rounded.Add,
-                                            doAction = { chooser.launch("apk") },
+                                            doAction = { chooser.launch("apk", "jar") },
                                         ),
                                     )
                                 },

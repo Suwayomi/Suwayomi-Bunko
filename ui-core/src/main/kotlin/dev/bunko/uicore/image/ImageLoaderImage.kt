@@ -6,9 +6,11 @@
 
 package dev.bunko.uicore.image
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
+import dev.bunko.uicore.theme.BunkoMotion
+import android.os.SystemClock
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -18,7 +20,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BrokenImage
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -31,11 +37,19 @@ import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.drawscope.DrawScope.Companion.DefaultFilterQuality
 import androidx.compose.ui.layout.ContentScale
+import com.seiko.imageloader.option.AsyncSizeResolver
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
-import dev.bunko.uicore.components.LoadingScreen
 import com.diamondedge.logging.logging
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.util.LruCache
+import com.seiko.imageloader.LocalImageLoader
 import com.seiko.imageloader.model.ImageAction
+import com.seiko.imageloader.model.ImageEvent
 import com.seiko.imageloader.model.ImageRequest
 import com.seiko.imageloader.model.ImageResult
 import com.seiko.imageloader.rememberImageAction
@@ -43,6 +57,31 @@ import com.seiko.imageloader.rememberImageActionPainter
 import com.seiko.imageloader.rememberImagePainter
 
 private val log = logging()
+
+private const val INSTANT_RESOLVE_MS = 50L
+
+private object RecentBitmaps {
+    private val entries = object : LruCache<Any, Bitmap>((Runtime.getRuntime().maxMemory() / 8).toInt()) {
+        override fun sizeOf(
+            key: Any,
+            value: Bitmap,
+        ) = value.allocationByteCount
+    }
+
+    fun get(key: Any): Bitmap? = entries.get(key)?.takeUnless { it.isRecycled }
+
+    fun put(
+        key: Any,
+        action: ImageAction,
+    ) {
+        val bitmap = when (action) {
+            is ImageResult.OfBitmap -> action.bitmap
+            is ImageResult.OfImage -> (action.image.drawable as? BitmapDrawable)?.bitmap
+            else -> null
+        } ?: return
+        if (entries.get(key) !== bitmap) entries.put(key, bitmap)
+    }
+}
 
 private enum class ImageLoaderImageState {
     Loading,
@@ -62,7 +101,7 @@ fun ImageLoaderImage(
     colorFilter: ColorFilter? = null,
     filterQuality: FilterQuality = DefaultFilterQuality,
     onLoading: (@Composable BoxScope.(Float) -> Unit)? = {
-        LoadingScreen(progress = it.coerceIn(0.0F, 1.0F), modifier = modifier then Modifier.fillMaxSize())
+        Spacer(errorModifier then Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceContainerHighest))
     },
     onFailure: (@Composable BoxScope.(Throwable) -> Unit)? = {
         LaunchedEffect(it) {
@@ -82,13 +121,34 @@ fun ImageLoaderImage(
         }
     },
     contentAlignment: Alignment = Alignment.Center,
-    animationSpec: FiniteAnimationSpec<Float>? = tween(),
+    animationSpec: FiniteAnimationSpec<Float>? = tween(BunkoMotion.MEDIUM_MS, easing = LinearOutSlowInEasing),
     onBitmap: ((android.graphics.Bitmap) -> Unit)? = null,
 ) {
     key(data) {
-        val request = remember { ImageRequest(data) }
+        val sizeResolver = remember { AsyncSizeResolver() }
+        val imageLoader = LocalImageLoader.current
+        val recentKey = remember {
+            imageLoader.config.run { componentRegistry.key(data, defaultOptions) } ?: data
+        }
+        val recent = remember { RecentBitmaps.get(recentKey) }
+        val request = remember {
+            ImageRequest(data) {
+                size(sizeResolver)
+                skipEvent = recent != null
+            }
+        }
+        val measured = remember(sizeResolver) {
+            Modifier.onSizeChanged { sizeResolver.setSize(it.toRequestSize()) }
+        }
         if (animationSpec != null) {
-            val imageAction by rememberImageAction(request)
+            val imageAction by rememberImageAction(
+                request,
+                imageLoader,
+                recent?.let { ImageResult.OfBitmap(it) } ?: ImageEvent.Start,
+            )
+            LaunchedEffect(imageAction) {
+                RecentBitmaps.put(recentKey, imageAction)
+            }
             if (onBitmap != null) {
                 LaunchedEffect(imageAction) {
                     when (val action = imageAction) {
@@ -104,33 +164,46 @@ fun ImageLoaderImage(
                 is ImageAction.Loading -> ImageLoaderImageState.Loading
                 is ImageAction.Success -> ImageLoaderImageState.Success
             }
-            Crossfade(state, animationSpec = animationSpec, modifier = modifier) {
-                Box(Modifier.fillMaxSize(), contentAlignment) {
-                    when (it) {
-                        ImageLoaderImageState.Loading -> onLoading?.invoke(this, 0F)
+            val createdAt = remember { SystemClock.uptimeMillis() }
+            val resolvedInstantly = remember(state) {
+                state != ImageLoaderImageState.Loading &&
+                    SystemClock.uptimeMillis() - createdAt < INSTANT_RESOLVE_MS
+            }
+            Box(modifier.then(measured), contentAlignment) {
+                when (state) {
+                    ImageLoaderImageState.Loading -> onLoading?.invoke(this, 0F)
 
-                        ImageLoaderImageState.Success -> Image(
+                    ImageLoaderImageState.Success -> {
+                        val fade = if (resolvedInstantly) null else remember { Animatable(0f) }
+                        if (fade != null) {
+                            LaunchedEffect(fade) { fade.animateTo(1f, animationSpec) }
+                        }
+                        Image(
                             painter = rememberImageActionPainter(
                                 imageAction,
                                 filterQuality = filterQuality,
                             ),
                             contentDescription = contentDescription,
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = if (fade != null) {
+                                Modifier.fillMaxSize().graphicsLayer { this.alpha = fade.value }
+                            } else {
+                                Modifier.fillMaxSize()
+                            },
                             alignment = alignment,
                             contentScale = contentScale,
                             alpha = alpha,
                             colorFilter = colorFilter,
                         )
+                    }
 
-                        ImageLoaderImageState.Failure -> {
-                            val failure = imageAction as? ImageAction.Failure ?: return@Crossfade
-                            onFailure?.invoke(this, failure.error)
-                        }
+                    ImageLoaderImageState.Failure -> {
+                        val failure = imageAction as? ImageAction.Failure
+                        if (failure != null) onFailure?.invoke(this, failure.error)
                     }
                 }
             }
         } else {
-            Box(modifier, contentAlignment) {
+            Box(modifier.then(measured), contentAlignment) {
                 Image(
                     painter = rememberImagePainter(request, filterQuality = filterQuality),
                     contentDescription = contentDescription,
@@ -144,3 +217,6 @@ fun ImageLoaderImage(
         }
     }
 }
+
+private fun IntSize.toRequestSize(): Size =
+    if (width > 0 && height > 0) Size(width.toFloat(), height.toFloat()) else Size.Unspecified

@@ -18,6 +18,8 @@ class CatalogPreferences(
 
     fun pinnedSources(): Preference<Set<String>> = preferenceStore.getStringSet("pinned_sources", emptySet())
 
+    fun globalSearchPinnedOnly(): Preference<Boolean> = preferenceStore.getBoolean("global_search_pinned_only", false)
+
     fun displayMode(): Preference<DisplayMode> =
         preferenceStore.getJsonObject(
             "display_mode",

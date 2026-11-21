@@ -63,9 +63,9 @@ fun LibraryMangaList(
                 ),
             ).asPaddingValues(),
         ) {
-            items(library) { manga ->
+            items(library, key = { it.id }, contentType = { "manga" }) { manga ->
                 LibraryMangaListItem(
-                    modifier = Modifier.libraryMangaClickable(
+                    modifier = Modifier.animateItem().libraryMangaClickable(
                         { onClickManga(manga.id) },
                         { onLongClickManga(manga.id) },
                     ),

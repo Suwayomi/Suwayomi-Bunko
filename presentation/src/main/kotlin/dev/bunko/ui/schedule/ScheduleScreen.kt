@@ -35,7 +35,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -56,6 +55,7 @@ import dev.bunko.ui.viewModel
 import dev.bunko.uicore.components.EmptyScreen
 import dev.bunko.uicore.components.ErrorScreen
 import dev.bunko.uicore.components.LoadingScreen
+import dev.bunko.uicore.components.RefreshBox
 import dev.bunko.uicore.resources.stringResource
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -123,7 +123,7 @@ private fun ScheduleContent(
                             onSelectCategory = actions.selectCategory,
                         )
                         HorizontalDivider()
-                        PullToRefreshBox(isRefreshing = isRefreshing, onRefresh = actions.refresh) {
+                        RefreshBox(isRefreshing = isRefreshing, onRefresh = actions.refresh) {
                             if (state.sections.isEmpty()) {
                                 EmptyScreen(stringResource(MR.strings.schedule_filtered_empty))
                             } else {
@@ -161,7 +161,7 @@ private fun ScheduleList(
                 SectionHeader(stringResource(section.group.title), section.series.size, open) { actions.toggle(section.group) }
             }
             if (open) {
-                items(section.series, key = { "${section.group.name}-${it.manga.id}" }) { series ->
+                items(section.series, key = { "${section.group.name}-${it.manga.id}" }, contentType = { "series" }) { series ->
                     ScheduleRow(series, onClick = { actions.open(series.manga.id) })
                 }
             }

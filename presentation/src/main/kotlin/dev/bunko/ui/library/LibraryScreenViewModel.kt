@@ -151,7 +151,8 @@ class LibraryScreenViewModel(
     private val library = Library(MutableStateFlow(LibraryState.Loading), mutableMapOf())
     val categories = library.categories.asStateFlow()
 
-    private val _selectedCategoryIndex by savedStateHandle.getStateFlow { 0 }
+    private val lastUsedCategory = libraryPreferences.lastUsedCategory()
+    private val _selectedCategoryIndex by savedStateHandle.getStateFlow { lastUsedCategory.get() }
     val selectedCategoryIndex = _selectedCategoryIndex.asStateFlow()
 
     private val _showingMenu by savedStateHandle.getStateFlow { false }
@@ -166,7 +167,7 @@ class LibraryScreenViewModel(
     val languageBadges = libraryPreferences.languageBadge().stateIn(scope)
     val localBadges = libraryPreferences.localBadge().stateIn(scope)
 
-    val resume = libraryResume.entry.stateIn(scope, SharingStarted.WhileSubscribed(5_000), null)
+    val resume = libraryResume.entry.stateIn(scope, SharingStarted.WhileSubscribed(5_000), libraryResume.latest)
 
     private val sortMode = libraryPreferences.sortMode().stateIn(scope)
     private val sortAscending = libraryPreferences.sortAscending().stateIn(scope)
@@ -175,30 +176,22 @@ class LibraryScreenViewModel(
         libraryPreferences.filterDownloaded().getAsFlow(),
         libraryPreferences.filterUnread().getAsFlow(),
         libraryPreferences.filterCompleted().getAsFlow(),
-    ) { downloaded, unread, completed ->
+        libraryPreferences.filterStarted().getAsFlow(),
+        libraryPreferences.filterBookmarked().getAsFlow(),
+    ) { downloaded, unread, completed, started, bookmarked ->
         { manga ->
-            when (downloaded) {
-                FilterState.EXCLUDED -> manga.downloadCount == null || manga.downloadCount == 0
-                FilterState.INCLUDED -> manga.downloadCount != null && (manga.downloadCount ?: 0) > 0
-                FilterState.IGNORED -> true
-            } &&
-                when (unread) {
-                    FilterState.EXCLUDED -> manga.unreadCount == null || manga.unreadCount == 0
-                    FilterState.INCLUDED -> manga.unreadCount != null && (manga.unreadCount ?: 0) > 0
-                    FilterState.IGNORED -> true
-                } &&
-                when (completed) {
-                    FilterState.EXCLUDED -> manga.status != MangaStatus.COMPLETED
-                    FilterState.INCLUDED -> manga.status == MangaStatus.COMPLETED
-                    FilterState.IGNORED -> true
-                }
+            downloaded.matches((manga.downloadCount ?: 0) > 0) &&
+                unread.matches((manga.unreadCount ?: 0) > 0) &&
+                completed.matches(manga.status == MangaStatus.COMPLETED) &&
+                started.matches(manga.isStarted()) &&
+                bookmarked.matches((manga.bookmarkCount ?: 0) > 0)
         }
     }
 
-    private val _onDeviceOnly by savedStateHandle.getStateFlow { false }
-    val onDeviceOnly = _onDeviceOnly.asStateFlow()
+    private val onDeviceOnlyPreference = libraryPreferences.onDeviceOnly()
+    val onDeviceOnly = onDeviceOnlyPreference.stateIn(scope)
 
-    private val onDeviceIds: Flow<Set<Long>?> = combine(_onDeviceOnly, offlineChapters.states) { on, _ -> on }
+    private val onDeviceIds: Flow<Set<Long>?> = combine(onDeviceOnly, offlineChapters.states) { on, _ -> on }
         .mapLatest { on ->
             if (on) withContext(Dispatchers.IO) { offlineChapters.store.all().map { it.chapter.mangaId }.toSet() } else null
         }
@@ -218,7 +211,7 @@ class LibraryScreenViewModel(
 
     private fun getLibrary() {
         library.categories.value = LibraryState.Loading
-        getCategories.asFlow()
+        getCategories.asFlow(cacheFirst = true)
             .onEach { categories ->
                 if (categories.isEmpty()) {
                     library.categories.value = LibraryState.Empty
@@ -226,6 +219,7 @@ class LibraryScreenViewModel(
                 }
                 library.categories.value = LibraryState.Loaded(
                     categories.sortedBy { it.order }
+                        .map { it.copy(size = shownCount(it.id) ?: 0) }
                         .toImmutableList(),
                 )
                 val ids = categories.mapTo(HashSet()) { it.id }
@@ -242,7 +236,7 @@ class LibraryScreenViewModel(
     }
 
     private fun watchCategory(category: Category): Job =
-        getMangaListFromCategory.asFlow(category, holdsManga = { ids -> ids.any { it in shownIds(category.id) } })
+        getMangaListFromCategory.asFlow(category, holdsManga = { ids -> ids.any { it in shownIds(category.id) } }, cacheFirst = true)
             .onEach {
                 library.mangaMap.setManga(
                     id = category.id,
@@ -269,11 +263,15 @@ class LibraryScreenViewModel(
         )
     }
 
+    private fun shownCount(categoryId: Long): Int? =
+        (library.mangaMap[categoryId]?.value as? CategoryState.Loaded)?.unfilteredItems?.value?.size
+
     private fun shownIds(categoryId: Long): List<Long> =
         (library.mangaMap[categoryId]?.value as? CategoryState.Loaded)?.unfilteredItems?.value?.map { it.id }.orEmpty()
 
     fun setSelectedPage(page: Int) {
         _selectedCategoryIndex.value = page
+        lastUsedCategory.set(page)
     }
 
     fun setShowingMenu(showingMenu: Boolean) {
@@ -311,6 +309,42 @@ class LibraryScreenViewModel(
             Sort.DATE_ADDED -> {
                 { a, b ->
                     a.inLibraryAt.compareTo(b.inLibraryAt)
+                }
+            }
+
+            Sort.LAST_READ -> {
+                { a, b ->
+                    (a.lastReadAt ?: 0).compareTo(b.lastReadAt ?: 0)
+                }
+            }
+
+            Sort.LATEST_CHAPTER -> {
+                { a, b ->
+                    (a.latestUploadAt ?: 0).compareTo(b.latestUploadAt ?: 0)
+                }
+            }
+
+            Sort.LATEST_FETCHED -> {
+                { a, b ->
+                    (a.latestFetchAt ?: 0).compareTo(b.latestFetchAt ?: 0)
+                }
+            }
+
+            Sort.LAST_UPDATE_CHECK -> {
+                { a, b ->
+                    (a.chaptersLastFetchedAt ?: 0).compareTo(b.chaptersLastFetchedAt ?: 0)
+                }
+            }
+
+            Sort.TOTAL_CHAPTERS -> {
+                { a, b ->
+                    (a.chapterCount ?: 0).compareTo(b.chapterCount ?: 0)
+                }
+            }
+
+            Sort.DOWNLOADED -> {
+                { a, b ->
+                    (a.downloadCount ?: 0).compareTo(b.downloadCount ?: 0)
                 }
             }
         }
@@ -437,7 +471,7 @@ class LibraryScreenViewModel(
     }
 
     fun toggleOnDeviceOnly() {
-        _onDeviceOnly.value = !_onDeviceOnly.value
+        onDeviceOnlyPreference.set(!onDeviceOnlyPreference.get())
     }
 
     fun updateQuery(query: String) {
@@ -492,3 +526,13 @@ class LibraryScreenViewModel(
         private val log = logging()
     }
 }
+
+private fun FilterState.matches(value: Boolean): Boolean =
+    when (this) {
+        FilterState.INCLUDED -> value
+        FilterState.EXCLUDED -> !value
+        FilterState.IGNORED -> true
+    }
+
+private fun Manga.isStarted(): Boolean =
+    (chapterCount ?: 0) > (unreadCount ?: 0) || (lastReadAt ?: 0) > 0

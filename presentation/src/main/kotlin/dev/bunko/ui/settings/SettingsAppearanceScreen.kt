@@ -59,6 +59,13 @@ import dev.bunko.uicore.resources.stringResource
 import dev.bunko.uicore.theme.ExtraColors
 import dev.bunko.uicore.theme.extraColors
 import dev.bunko.uicore.theme.themes
+import dev.bunko.uicore.theme.DYNAMIC_THEME_ID
+import dev.bunko.ui.base.theme.dynamicThemeSupported
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import dev.bunko.uicore.vm.ContextWrapper
 import dev.bunko.uicore.vm.ViewModel
 import cafe.adriel.voyager.core.screen.Screen
@@ -122,6 +129,8 @@ fun SettingsAppearanceScreenContent(
     val currentDarkTheme by darkTheme.collectAsState()
     val currentMode by themeMode.collectAsState()
     val pureBlackOn by pureBlack.collectAsState()
+    val dynamicSelected = dynamicThemeSupported &&
+        (if (isLight) currentLightTheme else currentDarkTheme) == DYNAMIC_THEME_ID
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -178,6 +187,31 @@ fun SettingsAppearanceScreenContent(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
+                        if (dynamicThemeSupported) {
+                            item(key = DYNAMIC_THEME_ID) {
+                                val context = LocalContext.current
+                                val system = remember(isLight, LocalConfiguration.current) {
+                                    if (isLight) dynamicLightColorScheme(context) else dynamicDarkColorScheme(context)
+                                }
+                                ThemePreviewCard(
+                                    colors = ThemePreviewColors(
+                                        background = if (pureBlackOn && !isLight) Color.Black else system.background,
+                                        onBackground = system.onBackground,
+                                        primary = system.primary,
+                                        secondary = system.secondary,
+                                        tertiary = system.tertiary,
+                                    ),
+                                    title = stringResource(MR.strings.theme_dynamic),
+                                    selected = dynamicSelected,
+                                    onClick = {
+                                        (if (isLight) lightTheme else darkTheme).value = DYNAMIC_THEME_ID
+                                        activeColors.primaryStateFlow.value = Color.Unspecified
+                                        activeColors.secondaryStateFlow.value = Color.Unspecified
+                                        activeColors.tertiaryStateFlow.value = Color.Unspecified
+                                    },
+                                )
+                            }
+                        }
                         items(themesForCurrentMode, key = { it.id }) { theme ->
                             val isSelected = theme.id == if (isLight) currentLightTheme else currentDarkTheme
                             ThemePreviewCard(
@@ -198,32 +232,44 @@ fun SettingsAppearanceScreenContent(
                         }
                     }
                 }
-                item {
-                    PreferenceSectionHeader(stringResource(MR.strings.theme_colors))
-                }
-                item {
-                    ColorPreference(
-                        preference = activeColors.primaryStateFlow,
-                        title = stringResource(MR.strings.color_primary),
-                        subtitle = stringResource(MR.strings.color_primary_sub),
-                        unsetColor = M2Theme.colors.primary,
-                    )
-                }
-                item {
-                    ColorPreference(
-                        preference = activeColors.secondaryStateFlow,
-                        title = stringResource(MR.strings.color_secondary),
-                        subtitle = stringResource(MR.strings.color_secondary_sub),
-                        unsetColor = M2Theme.colors.secondary,
-                    )
-                }
-                item {
-                    ColorPreference(
-                        preference = activeColors.tertiaryStateFlow,
-                        title = stringResource(MR.strings.color_tertiary),
-                        subtitle = stringResource(MR.strings.color_secondary_sub),
-                        unsetColor = M2Theme.extraColors.tertiary,
-                    )
+                if (dynamicSelected) {
+                    item {
+                        PreferenceSectionHeader(stringResource(MR.strings.theme_colors))
+                        Text(
+                            stringResource(MR.strings.theme_dynamic_colors_note),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        )
+                    }
+                } else {
+                    item {
+                        PreferenceSectionHeader(stringResource(MR.strings.theme_colors))
+                    }
+                    item {
+                        ColorPreference(
+                            preference = activeColors.primaryStateFlow,
+                            title = stringResource(MR.strings.color_primary),
+                            subtitle = stringResource(MR.strings.color_primary_sub),
+                            unsetColor = M2Theme.colors.primary,
+                        )
+                    }
+                    item {
+                        ColorPreference(
+                            preference = activeColors.secondaryStateFlow,
+                            title = stringResource(MR.strings.color_secondary),
+                            subtitle = stringResource(MR.strings.color_secondary_sub),
+                            unsetColor = M2Theme.colors.secondary,
+                        )
+                    }
+                    item {
+                        ColorPreference(
+                            preference = activeColors.tertiaryStateFlow,
+                            title = stringResource(MR.strings.color_tertiary),
+                            subtitle = stringResource(MR.strings.color_secondary_sub),
+                            unsetColor = M2Theme.extraColors.tertiary,
+                        )
+                    }
                 }
             }
             VerticalScrollbar(

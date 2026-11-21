@@ -34,12 +34,13 @@ fun parseServerUrl(
     port: Int,
     pathPrefix: String,
 ): Url? {
-    val trimmed = server.trim().trimEnd('/').ifEmpty { return null }
-    val withScheme = if ("://" in trimmed) trimmed else "http://$trimmed"
+    val trimmed = server.trim().ifEmpty { return null }
+    val withScheme = (if ("://" in trimmed) trimmed else "http://$trimmed").trimEnd('/')
+    if (withScheme.substringAfter("://").isEmpty()) return null
     val builder = runCatching { URLBuilder(withScheme) }.getOrNull() ?: return null
     if (builder.protocol != URLProtocol.HTTP && builder.protocol != URLProtocol.HTTPS) return null
     if (builder.host.isBlank()) return null
-    if (!hasExplicitPort(withScheme)) builder.port = port
+    if (!hasExplicitPort(withScheme) && port in 1..65535) builder.port = port
     pathPrefix.ifBlank { null }?.let { builder.path(it) }
     return builder.build()
 }

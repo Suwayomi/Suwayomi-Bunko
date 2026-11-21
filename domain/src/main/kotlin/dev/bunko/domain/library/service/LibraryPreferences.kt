@@ -17,6 +17,10 @@ class LibraryPreferences(
 ) {
     fun showAllCategory(): Preference<Boolean> = preferenceStore.getBoolean("show_all_category", false)
 
+    fun onDeviceOnly(): Preference<Boolean> = preferenceStore.getBoolean("on_device_only", false)
+
+    fun lastUsedCategory(): Preference<Int> = preferenceStore.getInt("last_used_category", 0)
+
     fun filterDownloaded(): Preference<FilterState> =
         preferenceStore.getJsonObject(
             "filter_downloaded",
@@ -34,6 +38,20 @@ class LibraryPreferences(
     fun filterCompleted(): Preference<FilterState> =
         preferenceStore.getJsonObject(
             "filter_completed",
+            FilterState.IGNORED,
+            FilterState.serializer(),
+        )
+
+    fun filterStarted(): Preference<FilterState> =
+        preferenceStore.getJsonObject(
+            "filter_started",
+            FilterState.IGNORED,
+            FilterState.serializer(),
+        )
+
+    fun filterBookmarked(): Preference<FilterState> =
+        preferenceStore.getJsonObject(
+            "filter_bookmarked",
             FilterState.IGNORED,
             FilterState.serializer(),
         )

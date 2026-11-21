@@ -6,6 +6,7 @@
 
 package dev.bunko.data
 
+import android.content.Context
 import dev.bunko.core.di.AppScope
 import dev.bunko.data.backup.BackupRepositoryImpl
 import dev.bunko.data.category.CategoryRepositoryImpl
@@ -21,10 +22,16 @@ import dev.bunko.data.track.TrackRepositoryImpl
 import dev.bunko.data.updates.UpdatesRepositoryImpl
 import dev.bunko.data.user.UserRepositoryImpl
 import dev.bunko.data.util.ApolloAuthInterceptor
+import dev.bunko.data.util.ApolloReachabilityInterceptor
 import dev.bunko.data.util.ApolloRetryInterceptor
+import dev.bunko.data.util.apolloCacheFactory
+import dev.bunko.data.util.cacheFileName
+import dev.bunko.data.util.deleteApolloCache
 import dev.bunko.data.util.KtorWebSocketEngine
 import dev.bunko.data.util.NonClosingHttpEngine
 import dev.bunko.domain.backup.service.BackupRepository
+import dev.bunko.domain.server.ServerReachability
+import dev.bunko.domain.server.credentialOrigins
 import dev.bunko.domain.category.service.CategoryRepository
 import dev.bunko.domain.chapter.service.ChapterRepository
 import dev.bunko.domain.download.service.DownloadRepository
@@ -44,6 +51,11 @@ import dev.bunko.domain.user.interactor.UserRefreshUI
 import dev.bunko.domain.user.service.UserRepository
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.annotations.ApolloExperimental
+import com.apollographql.apollo.cache.normalized.FetchPolicy
+import com.apollographql.apollo.cache.normalized.api.NormalizedCacheFactory
+import com.apollographql.apollo.cache.normalized.doNotStore
+import com.apollographql.apollo.cache.normalized.fetchPolicy
+import com.apollographql.apollo.cache.normalized.normalizedCache
 import com.apollographql.apollo.network.websocket.GraphQLWsProtocol
 import com.apollographql.apollo.network.websocket.WebSocketNetworkTransport
 import com.apollographql.ktor.http.KtorHttpEngine
@@ -75,6 +87,8 @@ private fun getApolloClient(
     httpClient: HttpClient,
     serverUrl: Url,
     authInterceptor: ApolloAuthInterceptor?,
+    cache: NormalizedCacheFactory? = null,
+    reachability: ServerReachability? = null,
 ): ApolloClient {
     val url = URLBuilder(serverUrl)
         .appendPathSegments("api", "graphql")
@@ -82,6 +96,18 @@ private fun getApolloClient(
     return ApolloClient.Builder()
         .serverUrl(url)
         .httpEngine(NonClosingHttpEngine(KtorHttpEngine(httpClient)))
+        .apply {
+            if (cache != null) {
+                normalizedCache(cache, writeToCacheAsynchronously = true)
+                fetchPolicy(FetchPolicy.NetworkOnly)
+                doNotStore(true)
+            }
+        }
+        .apply {
+            if (reachability != null) {
+                addInterceptor(ApolloReachabilityInterceptor(reachability))
+            }
+        }
         .addInterceptor(ApolloRetryInterceptor)
         .apply {
             if (authInterceptor != null) {
@@ -133,8 +159,11 @@ interface DataComponent {
         http: HttpNoAuth,
         serverPreferences: ServerPreferences,
         apolloAuthInterceptor: ApolloAuthInterceptor,
-    ): ApolloAppClient =
-        combine(
+        context: Context,
+        serverReachability: ServerReachability,
+    ): ApolloAppClient {
+        var activeCache: String? = null
+        return combine(
             http,
             serverPreferences.auth().stateIn(GlobalScope),
             serverPreferences.authUsername().stateIn(GlobalScope),
@@ -149,7 +178,27 @@ interface DataComponent {
                 serverPreferences.authUsername().get(),
                 serverPreferences.authPassword().get(),
             ),
-        ).asApolloClientState { getApolloClient(it.http, serverPreferences.serverUrl().get(), apolloAuthInterceptor) }
+        ).asApolloClientState { key ->
+            val cacheName = cacheFileName(
+                credentialOrigins(
+                    serverPreferences.server().get(),
+                    serverPreferences.port().get(),
+                    serverPreferences.fallbackServer().get(),
+                ),
+                key.auth,
+                key.username,
+            )
+            activeCache?.takeIf { it != cacheName }?.let(context::deleteApolloCache)
+            activeCache = cacheName
+            getApolloClient(
+                key.http,
+                serverPreferences.serverUrl().get(),
+                apolloAuthInterceptor,
+                apolloCacheFactory(context, cacheName),
+                serverReachability,
+            )
+        }
+    }
 
     @Provides
     @AppScope

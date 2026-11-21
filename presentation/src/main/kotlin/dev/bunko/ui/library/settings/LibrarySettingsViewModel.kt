@@ -19,6 +19,8 @@ class LibrarySettingsViewModel(
     val filterDownloaded = libraryPreferences.filterDownloaded().asStateFlow()
     val filterUnread = libraryPreferences.filterUnread().asStateFlow()
     val filterCompleted = libraryPreferences.filterCompleted().asStateFlow()
+    val filterStarted = libraryPreferences.filterStarted().asStateFlow()
+    val filterBookmarked = libraryPreferences.filterBookmarked().asStateFlow()
 
     val sortMode = libraryPreferences.sortMode().asStateFlow()
     val sortAscending = libraryPreferences.sortAscending().asStateFlow()

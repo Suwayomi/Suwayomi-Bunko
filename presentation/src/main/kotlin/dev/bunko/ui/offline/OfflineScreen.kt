@@ -144,7 +144,7 @@ private fun OfflineScreenContent(
                             )
                         }
                         if (isExpanded) {
-                            items(manga.chapters, key = { it.chapter.id }) { meta ->
+                            items(manga.chapters, key = { it.chapter.id }, contentType = { "chapter" }) { meta ->
                                 OfflineChapterRow(meta, onOpen = { onOpen(meta) }, onDelete = { onDelete(meta) })
                             }
                         }

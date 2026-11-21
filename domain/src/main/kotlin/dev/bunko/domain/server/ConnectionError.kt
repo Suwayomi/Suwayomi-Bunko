@@ -57,7 +57,9 @@ private val AUTH_STATUS = setOf(401, 403)
 
 fun Throwable.toConnectionError(): ConnectionError {
     val chain = generateSequence(this) { it.cause }.take(MAX_CAUSE_DEPTH).toList()
-    val detail = chain.lastOrNull { !it.message.isNullOrBlank() }?.message ?: toString()
+    val detail = chain.firstOrNull { it is FailoverException }?.message
+        ?: chain.lastOrNull { !it.message.isNullOrBlank() }?.message
+        ?: toString()
     val status = chain.firstNotNullOfOrNull { (it as? ResponseException)?.response?.status?.value }
     return when {
         status in AUTH_STATUS || chain.any { it.message.looksUnauthorized() } -> ConnectionError.Unauthorized(detail)

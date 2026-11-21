@@ -144,7 +144,6 @@
     <string name="version">Versi</string>
     <string name="whats_new">Apa yang baru</string>
     <string name="settings_general_screen">Pengaturan General</string>
-    <string name="theme_legacy_blue">Biru Legacy</string>
     <string name="theme_light">Terang</string>
     <string name="preset_themes">Tema bawaan</string>
     <string name="settings_reader_screen">Pengaturan Reader</string>
@@ -152,11 +151,7 @@
     <string name="theme">Tema</string>
     <string name="settings_tracking_screen">Pengaturan Tracking</string>
     <string name="color_primary_sub">Ditampilkan paling sering di keseluruhan aplikasi mu</string>
-    <string name="theme_green_apple">apel hijau</string>
-    <string name="theme_midnight_dusk">Senja Tengah Malam</string>
-    <string name="theme_tako">Tako</string>
     <string name="color_tertiary">Tersier</string>
-    <string name="theme_tidal_wave">Gelombang Pasang-Surut</string>
     <string name="backup_create_sub">Buat cadangan dari Suwayomi</string>
     <string name="backup_create">Buat Cadangan</string>
     <string name="language">Bahasa</string>

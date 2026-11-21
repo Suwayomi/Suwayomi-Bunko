@@ -1,0 +1,3 @@
+extend type MangaType @typePolicy(keyFields: "id")
+extend type ChapterType @typePolicy(keyFields: "id")
+extend type CategoryType @typePolicy(keyFields: "id")

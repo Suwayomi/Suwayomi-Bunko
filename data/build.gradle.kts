@@ -26,6 +26,8 @@ dependencies {
     api(libs.okio)
     api(libs.dateTime)
     implementation(libs.apollo.runtime)
+    implementation(libs.apollo.cache)
+    implementation(libs.apollo.cache.sqlite)
     implementation(libs.apollo.engine.ktor)
     api(projects.core)
     api(projects.i18n)

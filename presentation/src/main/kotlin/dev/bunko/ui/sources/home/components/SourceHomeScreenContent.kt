@@ -48,7 +48,8 @@ import dev.bunko.ui.main.components.bottomNav
 import dev.bunko.ui.sources.components.SourceStatusChip
 import dev.bunko.ui.sources.home.SourceUI
 import dev.bunko.uicore.components.EmptyScreen
-import dev.bunko.uicore.components.LoadingScreen
+import dev.bunko.uicore.components.LoadStateCrossfade
+import dev.bunko.uicore.components.SkeletonList
 import dev.bunko.uicore.image.ImageLoaderImage
 import dev.bunko.uicore.resources.stringResource
 import kotlinx.collections.immutable.ImmutableList
@@ -61,8 +62,21 @@ fun SourceHomeScreenContent(
     isLoading: Boolean,
     sources: ImmutableList<SourceUI>,
 ) {
-    if (isLoading && sources.isEmpty()) {
-        LoadingScreen()
+    LoadStateCrossfade(isLoading && sources.isEmpty(), contentKey = { it }) { loading ->
+        SourceHomeList(loading, sources, onSourceClick, onLatestClick, onTogglePinned)
+    }
+}
+
+@Composable
+private fun SourceHomeList(
+    loading: Boolean,
+    sources: ImmutableList<SourceUI>,
+    onSourceClick: (Source) -> Unit,
+    onLatestClick: (Source) -> Unit,
+    onTogglePinned: (Source) -> Unit,
+) {
+    if (loading) {
+        SkeletonList(coverHeight = 44.dp, lines = 2, coverAspectRatio = 1f, coverShape = RoundedCornerShape(10.dp))
     } else if (sources.isEmpty()) {
         EmptyScreen(stringResource(MR.strings.sources_empty), icon = Icons.Outlined.Explore)
     } else {

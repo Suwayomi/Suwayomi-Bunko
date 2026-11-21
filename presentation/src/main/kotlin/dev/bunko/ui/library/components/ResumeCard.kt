@@ -6,13 +6,21 @@
 
 package dev.bunko.ui.library.components
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
@@ -33,10 +41,12 @@ import dev.bunko.ui.library.ResumeEntry
 import dev.bunko.uicore.components.mangaAspectRatio
 import dev.bunko.uicore.image.ImageLoaderImage
 import dev.bunko.uicore.resources.stringResource
+import dev.bunko.uicore.theme.BunkoMotion
 
 @Composable
 fun ResumeCard(
     entry: ResumeEntry,
+    expanded: Boolean,
     onResume: (chapterId: Long, mangaId: Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -47,55 +57,64 @@ fun ResumeCard(
     }
     Surface(
         onClick = { onResume(entry.chapter.id, entry.manga.id) },
-        modifier = modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceContainer,
+        modifier = modifier,
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        shadowElevation = 6.dp,
     ) {
         Row(
             modifier = Modifier.padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             ImageLoaderImage(
                 data = entry.manga,
                 contentDescription = null,
                 modifier = Modifier
-                    .height(56.dp)
-                    .width(56.dp * mangaAspectRatio)
+                    .height(48.dp)
+                    .width(48.dp * mangaAspectRatio)
                     .clip(RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.Crop,
                 filterQuality = FilterQuality.Medium,
                 onLoading = null,
             )
-            Column(Modifier.weight(1f)) {
-                Text(
-                    stringResource(MR.strings.continue_reading),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                Text(
-                    entry.manga.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    chapterLabel,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandHorizontally(tween(BunkoMotion.LONG_MS, easing = BunkoMotion.EmphasizedDecelerate)) +
+                    fadeIn(tween(BunkoMotion.MEDIUM_MS, delayMillis = BunkoMotion.SHORT_MS)),
+                exit = shrinkHorizontally(tween(BunkoMotion.MEDIUM_MS, easing = BunkoMotion.EmphasizedAccelerate)) +
+                    fadeOut(tween(BunkoMotion.SHORT_MS)),
+            ) {
+                Column(Modifier.padding(start = 12.dp).widthIn(max = 200.dp)) {
+                    Text(
+                        stringResource(MR.strings.continue_reading),
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1,
+                    )
+                    Text(
+                        entry.manga.title,
+                        style = MaterialTheme.typography.titleSmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        chapterLabel,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
-            Surface(shape = RoundedCornerShape(50), color = MaterialTheme.colorScheme.primary) {
+            Spacer(Modifier.width(12.dp))
+            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary) {
                 Icon(
                     Icons.Filled.PlayArrow,
                     contentDescription = stringResource(MR.strings.action_resume),
                     tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.padding(8.dp),
+                    modifier = Modifier.padding(8.dp).size(24.dp),
                 )
             }
+            Spacer(Modifier.width(4.dp))
         }
     }
 }

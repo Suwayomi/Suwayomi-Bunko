@@ -196,7 +196,6 @@
     <string name="action_bookmark">فصل المرجعية</string>
     <string name="action_filter_bookmarked">مرجعية</string>
     <string name="download_all">الكل</string>
-    <string name="theme_amoled">امولاد</string>
     <string name="channel_active">مفعل</string>
     <string name="action_download">تحميل</string>
     <string name="clear_cache_sub">مستخدمة%1$s</string>
@@ -225,17 +224,7 @@
     <string name="group_updates">تحديثات</string>
     <string name="notification_updating">جاري تحديث المكتبة</string>
     <string name="theme_default">السمة الافتراضية</string>
-    <string name="theme_legacy_blue">أزرق غامق</string>
     <string name="color_tertiary">لون ثلاثي</string>
-    <string name="theme_lavender">أرجواني</string>
-    <string name="theme_strawberry_daiquiri">كوكتيل الفراولة</string>
-    <string name="theme_tako">تاكو</string>
-    <string name="theme_midnight_dusk">الغروب</string>
-    <string name="theme_green_apple">التفاحة الخضراء</string>
-    <string name="theme_tealturquoise">فيروزي</string>
-    <string name="theme_yinyang">الين واليانج</string>
-    <string name="theme_yotsuba">أربع أوراق</string>
-    <string name="theme_tidal_wave">موجة البحر</string>
     <string name="grid_size">الحجم</string>
     <string name="server_path_prefix">بادئة مسار الخادم</string>
     <string name="action_move_up">حرك للأعلى</string>

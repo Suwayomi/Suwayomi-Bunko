@@ -119,7 +119,7 @@ fun DownloadsScreenContent(
                         clearQueue = clearQueue,
                     )
                 }
-                items(downloadQueue, key = { it.chapter.id }) {
+                items(downloadQueue, key = { it.chapter.id }, contentType = { "download" }) {
                     DownloadsItem(
                         modifier = Modifier.animateItem(),
                         item = it,

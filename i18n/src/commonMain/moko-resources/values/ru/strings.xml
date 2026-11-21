@@ -3,8 +3,6 @@
     <string name="action_ok">ОК</string>
     <string name="action_search">Поиск</string>
     <string name="filter_completed">Завершено</string>
-    <string name="theme_yotsuba">Yotsuba</string>
-    <string name="theme_yinyang">Yin &amp; Yang</string>
     <string name="group_updates_channel_app">Обновление приложения</string>
     <string name="authentication">Аутентификация сервера</string>
     <string name="server_port">Порт сервера</string>

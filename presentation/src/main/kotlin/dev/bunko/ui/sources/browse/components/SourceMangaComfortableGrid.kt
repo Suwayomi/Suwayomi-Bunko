@@ -6,7 +6,6 @@
 
 package dev.bunko.ui.sources.browse.components
 
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,7 +32,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
@@ -41,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.bunko.domain.manga.model.Manga
 import dev.bunko.ui.library.components.libraryCoverFrame
+import dev.bunko.ui.library.components.libraryMangaClickable
 import dev.bunko.ui.main.components.bottomNav
 import dev.bunko.uicore.components.VerticalScrollbar
 import dev.bunko.uicore.components.mangaAspectRatio
@@ -78,11 +77,12 @@ fun SourceMangaComfortableGrid(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            items(mangas, key = { it.id }) { manga ->
+            items(mangas, key = { it.id }, contentType = { "manga" }) { manga ->
                 SourceMangaComfortableGridItem(
-                    modifier = Modifier.combinedClickable(
-                        onClick = { onClickManga(manga.id) },
-                        onLongClick = { onLongClickManga(manga) },
+                    modifier = Modifier.animateItem().libraryMangaClickable(
+                        { onClickManga(manga.id) },
+                        { onLongClickManga(manga) },
+                        clipShape = MaterialTheme.shapes.medium,
                     ),
                     manga = manga,
                 )
@@ -115,8 +115,7 @@ private fun SourceMangaComfortableGridItem(
 ) {
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .clip(MaterialTheme.shapes.medium) then modifier,
+            .fillMaxWidth() then modifier,
     ) {
         Column {
             ImageLoaderImage(

@@ -222,9 +222,10 @@ class MangaScreenViewModel(
             }
             .launchIn(scope)
 
+        var firstMangaLoad = true
         reloadManga.onStart { emit(Unit) }.flatMapLatest {
             loadingManga.value = true
-            getManga.asFlow(params.mangaId)
+            getManga.asFlow(params.mangaId, cacheFirst = firstMangaLoad).also { firstMangaLoad = false }
         }
             .onEach {
                 _manga.value = it

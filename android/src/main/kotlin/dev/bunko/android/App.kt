@@ -49,6 +49,8 @@ class App :
 
         setupNotificationChannels()
 
+        appComponent.serverReachability.attach(this)
+
         appComponent.uiPreferences.themeMode()
             .getAsFlow {
                 AppCompatDelegate.setDefaultNightMode(

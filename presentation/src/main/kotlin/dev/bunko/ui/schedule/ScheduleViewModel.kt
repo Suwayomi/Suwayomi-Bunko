@@ -85,15 +85,15 @@ class ScheduleViewModel(
         if (_isRefreshing.value) return
         scope.launch {
             _isRefreshing.value = true
-            fetch()
+            fetch(refresh = true)
             _isRefreshing.value = false
         }
     }
 
-    private suspend fun fetch() =
+    private suspend fun fetch(refresh: Boolean = false) =
         coroutineScope {
             val categories = async { getCategories.await().orEmpty() }
-            getReleaseSchedule.await()
+            getReleaseSchedule.await(refresh)
                 .onSuccess { source.value = Source.Loaded(it, categories.await()) }
                 .onFailure {
                     log.warn(it) { "Release schedule failed to load" }

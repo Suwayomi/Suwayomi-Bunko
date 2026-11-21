@@ -14,11 +14,16 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpTimeout
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 import me.tatarka.inject.annotations.Inject
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
 
 data class ScheduledSeries(
@@ -31,6 +36,7 @@ data class ScheduledSeries(
 @Inject
 class GetReleaseSchedule(
     private val libraryRepository: LibraryRepository,
+    private val statusStore: AniListStatusStore,
 ) {
     private val aniList by lazy {
         AniListStatuses(
@@ -44,11 +50,14 @@ class GetReleaseSchedule(
         )
     }
 
-    suspend fun await(): Result<List<ScheduledSeries>> =
+    private val cacheLock = Mutex()
+    private var cached: Map<Long, StoredStatus>? = null
+
+    suspend fun await(refresh: Boolean = false): Result<List<ScheduledSeries>> =
         try {
             val now = Clock.System.now().toEpochMilliseconds()
             val histories = libraryRepository.getReleaseHistory(since = now - WINDOW.inWholeMilliseconds).first()
-            val statuses = aniListStatuses(histories)
+            val statuses = aniListStatuses(histories, now, refresh)
             Result.success(histories.map { ScheduledSeries(it.manga, it.categoryIds, estimateRelease(it, statuses[it.aniListId], now)) })
         } catch (e: CancellationException) {
             throw e
@@ -56,21 +65,38 @@ class GetReleaseSchedule(
             Result.failure(e)
         }
 
-    private suspend fun aniListStatuses(histories: List<ReleaseHistory>): Map<Long, AniListStatus> {
-        val ids = histories.mapNotNull { it.aniListId }
+    private suspend fun aniListStatuses(
+        histories: List<ReleaseHistory>,
+        now: Long,
+        refresh: Boolean,
+    ): Map<Long, AniListStatus> {
+        val ids = histories.mapNotNull { it.aniListId }.distinct()
         if (ids.isEmpty()) return emptyMap()
-        return try {
-            aniList.lookup(ids)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            log.warn(e) { "AniList status lookup failed, estimating from chapters only" }
-            emptyMap()
+        return cacheLock.withLock {
+            var entries = cached ?: withContext(Dispatchers.IO) { runCatching { statusStore.load() }.getOrDefault(emptyMap()) }
+            val stale = ids.filter { id -> refresh || entries[id]?.let { now - it.fetchedAt >= STATUS_TTL.inWholeMilliseconds } != false }
+            if (stale.isNotEmpty()) {
+                try {
+                    val found = aniList.lookup(stale)
+                    entries = entries + stale.associateWith { StoredStatus(found[it], now) }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    log.warn(e) { "AniList status lookup failed, estimating from chapters only" }
+                }
+            }
+            val current = entries.filterKeys { it in ids }
+            if (current != cached) {
+                withContext(Dispatchers.IO) { runCatching { statusStore.save(current) }.onFailure { log.warn(it) { "AniList statuses not saved" } } }
+            }
+            cached = current
+            current.mapNotNull { (id, entry) -> entry.status?.let { id to it } }.toMap()
         }
     }
 
     private companion object {
         val WINDOW = 365.days
+        val STATUS_TTL = 6.hours
         val log = logging()
     }
 }

@@ -7,6 +7,9 @@
 package dev.bunko.ui.history.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material3.ripple
+import dev.bunko.uicore.components.pressScale
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,11 +46,14 @@ fun HistoryRow(
     onResume: () -> Unit,
     onOpenManga: () -> Unit,
     onRemove: (() -> Unit)?,
+    modifier: Modifier = Modifier,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Row(
-        Modifier
+        modifier
             .fillMaxWidth()
-            .clickable(onClick = onResume)
+            .pressScale(interactionSource)
+            .clickable(interactionSource = interactionSource, indication = ripple(), onClick = onResume)
             .padding(start = 16.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

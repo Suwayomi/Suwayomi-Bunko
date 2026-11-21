@@ -8,6 +8,10 @@ package dev.bunko.ui.updates.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material3.ripple
+import dev.bunko.uicore.components.pressScale
+import androidx.compose.runtime.remember
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -66,7 +70,9 @@ fun UpdatesItem(
     onClickDownload: (Chapter) -> Unit,
     onClickDeleteDownload: (Chapter) -> Unit,
     onClickStopDownload: (Chapter) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     val manga = chapterDownloadItem.manga!!
     val chapter = chapterDownloadItem.chapter
     val alpha = if (chapter.read) ReadAlpha else 1f
@@ -74,9 +80,12 @@ fun UpdatesItem(
     val onServer = chapterDownloadItem.downloadState.collectAsState().value == ChapterDownloadState.Downloaded
 
     Row(
-        modifier = Modifier
+        modifier = modifier
+            .pressScale(interactionSource)
             .selectedBackground(isSelected)
             .combinedClickable(
+                interactionSource = interactionSource,
+                indication = ripple(),
                 onClick = { if (isSelected) onUnselectChapter(chapter.id) else onClickItem() },
                 onLongClick = { onLongClick(chapter.id) },
             )

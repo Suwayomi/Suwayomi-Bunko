@@ -69,9 +69,9 @@ fun LibraryMangaComfortableGrid(
             verticalArrangement = Arrangement.spacedBy(LibraryGridSpacing),
             horizontalArrangement = Arrangement.spacedBy(LibraryGridSpacing),
         ) {
-            items(library, key = { it.id }) { manga ->
+            items(library, key = { it.id }, contentType = { "manga" }) { manga ->
                 LibraryMangaComfortableGridItem(
-                    modifier = Modifier.libraryMangaClickable(
+                    modifier = Modifier.animateItem().libraryMangaClickable(
                         { onClickManga(manga.id) },
                         { onLongClickManga(manga.id) },
                     ),

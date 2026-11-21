@@ -194,5 +194,5 @@ fun MemoryCacheBuilder<MemoryKey, Bitmap>.configure(contextWrapper: ContextWrapp
 
 private const val CHAPTER_CACHE_DIR = "chapter_cache"
 private const val CHAPTER_CACHE_BYTES = 200L * 1024 * 1024
-private const val IMAGE_CACHE_BYTES = 50L * 1024 * 1024
+private const val IMAGE_CACHE_BYTES = 300L * 1024 * 1024
 private const val MEMORY_CACHE_PERCENT = 0.25

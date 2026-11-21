@@ -131,14 +131,14 @@ private fun HistoryList(
     ) {
         if (state.pending.isNotEmpty()) {
             item(key = "pending") { DayHeader(stringResource(MR.strings.history_pending)) }
-            items(state.pending, key = { "p${it.chapter.id}" }) { entry ->
-                HistoryRow(entry, { onResume(entry) }, { onOpenManga(entry) }, onRemove = null)
+            items(state.pending, key = { "p${it.chapter.id}" }, contentType = { "entry" }) { entry ->
+                HistoryRow(entry, { onResume(entry) }, { onOpenManga(entry) }, onRemove = null, modifier = Modifier.animateItem())
             }
         }
         state.days.forEach { day ->
             item(key = "d${day.date}") { DayHeader(relativeDate(day.date)) }
-            items(day.entries, key = { "c${it.chapter.id}" }) { entry ->
-                HistoryRow(entry, { onResume(entry) }, { onOpenManga(entry) }, onRemove = { onRemove(entry) })
+            items(day.entries, key = { "c${it.chapter.id}" }, contentType = { "entry" }) { entry ->
+                HistoryRow(entry, { onResume(entry) }, { onOpenManga(entry) }, onRemove = { onRemove(entry) }, modifier = Modifier.animateItem())
             }
         }
     }

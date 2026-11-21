@@ -8,6 +8,7 @@ package dev.bunko.ui.library.components
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -17,15 +18,19 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.bunko.ui.main.components.bottomNav
+import dev.bunko.uicore.components.pressScale
 
-private val LibraryCoverShape = RoundedCornerShape(8.dp)
+val LibraryCoverShape = RoundedCornerShape(8.dp)
 
 val LibraryGridPadding: Dp = 12.dp
 val LibraryGridSpacing: Dp = 8.dp
@@ -58,7 +63,19 @@ fun Modifier.libraryCoverFrame(selected: Boolean = false): Modifier {
         )
 }
 
+@Composable
 fun Modifier.libraryMangaClickable(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
-): Modifier = combinedClickable(onClick = onClick, onLongClick = onLongClick)
+    clipShape: Shape? = null,
+): Modifier {
+    val interactionSource = remember { MutableInteractionSource() }
+    return pressScale(interactionSource)
+        .then(if (clipShape != null) Modifier.clip(clipShape) else Modifier)
+        .combinedClickable(
+            interactionSource = interactionSource,
+            indication = ripple(),
+            onClick = onClick,
+            onLongClick = onLongClick,
+        )
+}

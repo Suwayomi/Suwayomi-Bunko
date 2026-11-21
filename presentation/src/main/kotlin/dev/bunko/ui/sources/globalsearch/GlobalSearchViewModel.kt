@@ -68,12 +68,18 @@ class GlobalSearchViewModel(
 
     private val languages = catalogPreferences.languages().stateIn(scope)
 
+    private val pinned = catalogPreferences.pinnedSources().stateIn(scope)
+
+    private val _pinnedOnly = catalogPreferences.globalSearchPinnedOnly().asStateFlow()
+    val pinnedOnly = _pinnedOnly.asStateFlow()
+
     private val _isLoading = MutableStateFlow(true)
     val isLoading = _isLoading.asStateFlow()
 
-    val sources = combine(installedSources, languages) { installedSources, languages ->
+    val sources = combine(installedSources, languages, pinned, _pinnedOnly) { installedSources, languages, pinned, pinnedOnly ->
         installedSources.filter {
-            it.lang in languages || it.id == Source.LOCAL_SOURCE_ID
+            (it.lang in languages || it.id == Source.LOCAL_SOURCE_ID) &&
+                (!pinnedOnly || it.id.toString() in pinned)
         }.toImmutableList()
     }.stateIn(scope, SharingStarted.Eagerly, persistentListOf())
 
@@ -142,15 +148,20 @@ class GlobalSearchViewModel(
 
     private val semaphore = Semaphore(5)
 
+    private var searchedQuery: String? = null
+
     private fun readySearch() {
         search
             .combine(sources) { query, sources ->
                 query to sources
             }
             .mapLatest { (query, sources) ->
-                results.clear()
+                if (query != searchedQuery) {
+                    results.clear()
+                    searchedQuery = query
+                }
                 supervisorScope {
-                    sources.map { source ->
+                    sources.filter { it.id !in results }.map { source ->
                         async {
                             semaphore.withPermit {
                                 getSearchManga.asFlow(source, 1, query, null)
@@ -187,6 +198,10 @@ class GlobalSearchViewModel(
 
     fun startSearch(query: String) {
         search.value = query
+    }
+
+    fun setPinnedOnly(pinnedOnly: Boolean) {
+        _pinnedOnly.value = pinnedOnly
     }
 
     data class Params(

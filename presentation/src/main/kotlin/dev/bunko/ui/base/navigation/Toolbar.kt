@@ -62,6 +62,7 @@ fun Toolbar(
     searchText: String? = null,
     search: ((String) -> Unit)? = null,
     searchSubmit: (() -> Unit)? = null,
+    closeSearchOnBack: Boolean = true,
     isActionMode: Boolean = false,
     containerColor: Color? = null,
     titleAlpha: Float = 1f,
@@ -73,7 +74,7 @@ fun Toolbar(
         searchSubmit?.invoke()
         searchMode = false
     }
-    BackHandler(searchMode, ::closeSearch)
+    BackHandler(searchMode && closeSearchOnBack, ::closeSearch)
 
     TopAppBar(
         modifier = modifier,
@@ -93,7 +94,7 @@ fun Toolbar(
         },
         navigationIcon = {
             if (closable || searchMode) {
-                IconButton(onClick = { if (searchMode) closeSearch() else onClose() }) {
+                IconButton(onClick = { if (searchMode && closeSearchOnBack) closeSearch() else onClose() }) {
                     Icon(
                         if (closeIcon === ToolbarDefault) Icons.AutoMirrored.Rounded.ArrowBack else closeIcon,
                         stringResource(MR.strings.action_close),

@@ -43,3 +43,48 @@ query GetReleaseSchedule($since: LongString!) {
     }
   }
 }
+
+query GetLibraryStatistics {
+  mangas(condition: {inLibrary: true}) {
+    nodes {
+      id
+      status
+      sourceId
+      updateStrategy
+      unreadCount
+      downloadCount
+      chapters {
+        totalCount
+      }
+      lastReadChapter {
+        lastReadAt
+      }
+      categories {
+        nodes {
+          id
+        }
+      }
+      trackRecords {
+        nodes {
+          trackerId
+          displayScore
+          tracker {
+            scores
+          }
+        }
+      }
+    }
+  }
+  categories {
+    nodes {
+      id
+      includeInUpdate
+    }
+  }
+  settings {
+    excludeCompleted
+    excludeNotStarted
+    excludeUnreadChapters
+    excludeEntryWithUnreadChapters
+  }
+}

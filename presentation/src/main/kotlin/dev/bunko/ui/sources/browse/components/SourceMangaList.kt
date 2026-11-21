@@ -6,7 +6,6 @@
 
 package dev.bunko.ui.sources.browse.components
 
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -31,6 +30,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import dev.bunko.domain.manga.model.Manga
 import dev.bunko.ui.library.components.libraryCoverFrame
+import dev.bunko.ui.library.components.libraryMangaClickable
 import dev.bunko.ui.main.components.bottomNav
 import dev.bunko.uicore.components.MangaListItem
 import dev.bunko.uicore.components.MangaListItemImage
@@ -60,11 +60,11 @@ fun SourceMangaList(
                 ),
             ).asPaddingValues(),
         ) {
-            items(mangas, key = { it.id }) { manga ->
+            items(mangas, key = { it.id }, contentType = { "manga" }) { manga ->
                 MangaListItem(
-                    modifier = Modifier.combinedClickable(
-                        onClick = { onClickManga(manga.id) },
-                        onLongClick = { onLongClickManga(manga) },
+                    modifier = Modifier.animateItem().libraryMangaClickable(
+                        { onClickManga(manga.id) },
+                        { onLongClickManga(manga) },
                     ),
                     manga = manga,
                 )

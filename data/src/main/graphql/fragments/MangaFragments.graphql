@@ -72,6 +72,7 @@ fragment LibraryMangaFragment on MangaType {
   }
   latestFetchedChapter {
     sourceOrder
+    fetchedAt
   }
   source {
     ...SourceFragment

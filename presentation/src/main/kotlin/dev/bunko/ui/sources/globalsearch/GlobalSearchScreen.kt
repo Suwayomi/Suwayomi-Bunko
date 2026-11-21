@@ -34,8 +34,11 @@ class GlobalSearchScreen(
 
         GlobalSearchScreenContent(
             sources = vm.sources.collectAsState().value,
+            isLoading = vm.isLoading.collectAsState().value,
             results = vm.results,
             query = vm.query.collectAsState().value,
+            pinnedOnly = vm.pinnedOnly.collectAsState().value,
+            setPinnedOnly = vm::setPinnedOnly,
             setQuery = vm::setQuery,
             submitSearch = vm::startSearch,
             onSourceClick = { navigator push SourceScreen(it, vm.query.value) },

@@ -23,7 +23,7 @@ interface CategoryRepository {
         categoryId: Long,
     ): Flow<Unit>
 
-    fun getCategories(): Flow<List<Category>>
+    fun getCategories(cacheFirst: Boolean = false): Flow<List<Category>>
 
     fun createCategory(name: String): Flow<Unit>
 
@@ -39,7 +39,10 @@ interface CategoryRepository {
 
     fun deleteCategory(categoryId: Long): Flow<Unit>
 
-    fun getMangaFromCategory(categoryId: Long): Flow<List<Manga>>
+    fun getMangaFromCategory(
+        categoryId: Long,
+        cacheFirst: Boolean = false,
+    ): Flow<List<Manga>>
 
     fun updateCategoryMeta(
         categoryId: Long,

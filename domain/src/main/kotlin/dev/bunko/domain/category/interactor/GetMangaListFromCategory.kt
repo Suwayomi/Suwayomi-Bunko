@@ -51,8 +51,10 @@ class GetMangaListFromCategory(
     fun asFlow(
         category: Category,
         holdsManga: (suspend (List<Long>) -> Boolean)? = null,
+        cacheFirst: Boolean = false,
     ) = serverListeners.combineCategoryManga(
         categoryRepository.getMangaFromCategory(category.id),
+        cached = if (cacheFirst) categoryRepository.getMangaFromCategory(category.id, cacheFirst = true) else null,
         predate = { category.id == it },
         holdsManga = holdsManga,
     )

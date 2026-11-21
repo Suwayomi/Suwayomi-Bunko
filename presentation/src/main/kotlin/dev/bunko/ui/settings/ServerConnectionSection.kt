@@ -72,7 +72,8 @@ data class ServerAddress(
     val pathPrefix: String,
     val fallback: String,
 ) {
-    val portNumber: Int? get() = port.trim().toIntOrNull()?.takeIf { it in 1..65535 }
+    val portNumber: Int?
+        get() = port.trim().let { if (it.isEmpty()) 0 else it.toIntOrNull()?.takeIf { p -> p in 1..65535 } }
 
     val resolved: Url? get() = portNumber?.let { parseServerUrl(url, it, pathPrefix.trim()) }
 
@@ -225,6 +226,7 @@ fun ServerAddressForm(
                 onValueChange = { port = it.filter(Char::isDigit).take(5) },
                 modifier = Modifier.weight(1f),
                 label = { Text(stringResource(MR.strings.server_port_label)) },
+                placeholder = { Text(stringResource(MR.strings.server_port_auto)) },
                 singleLine = true,
                 isError = draft.portNumber == null,
                 supportingText = if (draft.portNumber == null) {

@@ -6,7 +6,8 @@
 
 package dev.bunko.ui.library.components
 
-import androidx.compose.material.icons.rounded.DownloadDone
+import androidx.compose.material.icons.outlined.DownloadForOffline
+import androidx.compose.material.icons.rounded.DownloadForOffline
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -162,9 +163,12 @@ private fun LibraryRegularToolbar(
                     )
                 }
             }
-            IconButton(onClick = onToggleOnDeviceOnly) {
+            LabeledIconButton(
+                label = stringResource(MR.strings.library_on_device_only),
+                onClick = onToggleOnDeviceOnly,
+            ) {
                 Icon(
-                    imageVector = Icons.Rounded.DownloadDone,
+                    imageVector = if (onDeviceOnly) Icons.Rounded.DownloadForOffline else Icons.Outlined.DownloadForOffline,
                     contentDescription = stringResource(MR.strings.library_on_device_only),
                     tint = if (onDeviceOnly) MaterialTheme.colorScheme.primary else LocalContentColor.current,
                 )

@@ -79,8 +79,6 @@
     <string name="settings_tracking_screen">Cài đặt theo dõi</string>
     <string name="theme_default">Mặc định</string>
     <string name="theme">Giao diện</string>
-    <string name="theme_tidal_wave">Cao trào</string>
-    <string name="theme_legacy_blue">Legacy Blue</string>
     <string name="color_primary">Chính</string>
     <string name="backup_restore">Khôi phục sao lưu</string>
     <string name="backup_create">Tạo bản sao lưu</string>
@@ -197,14 +195,6 @@
     <string name="settings_server_screen">Cài đặt máy chủ</string>
     <string name="theme_light">Ánh sáng</string>
     <string name="color_primary_sub">Hiển thị thường xuyên nhất trên ứng dụng của bạn</string>
-    <string name="theme_yinyang">Âm Dương</string>
-    <string name="theme_green_apple">Táo xanh</string>
-    <string name="theme_lavender">Oải hương</string>
-    <string name="theme_midnight_dusk">Hoàng hôn</string>
-    <string name="theme_strawberry_daiquiri">Cúc dâu tây</string>
-    <string name="theme_tako">Tako</string>
-    <string name="theme_tealturquoise">Màu xanh ngọc lam</string>
-    <string name="theme_yotsuba">Cỏ bốn lá</string>
     <string name="color_secondary">Phụ</string>
     <string name="color_secondary_sub">Điểm nhấn chọn các phần của giao diện người dùng</string>
     <string name="color_tertiary">Màu cấp ba</string>

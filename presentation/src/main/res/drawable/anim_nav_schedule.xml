@@ -1,0 +1,59 @@
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:name="schedule_enter"
+            android:width="24dp"
+            android:height="24dp"
+            android:viewportWidth="24"
+            android:viewportHeight="24">
+            <group
+                android:name="calendar"
+                android:pivotX="12"
+                android:pivotY="22">
+                <path
+                    android:name="page"
+                    android:fillColor="#000000"
+                    android:fillType="evenOdd"
+                    android:pathData="M 19 4 L 18 4 L 18 2 L 16 2 L 16 4 L 8 4 L 8 2 L 6 2 L 6 4 L 5 4 C 3.89 4 3.01 4.9 3.01 6 L 3 20 C 3 21.1 3.89 22 5 22 L 19 22 C 20.1 22 21 21.1 21 20 L 21 6 C 21 4.9 20.1 4 19 4 Z M 5 6 L 19 6 L 19 8 L 5 8 Z M 5 10 L 19 10 L 19 20 L 5 20 Z M 7 12 L 9 12 L 9 14 L 7 14 Z M 11 12 L 13 12 L 13 14 L 11 14 Z M 15 12 L 17 12 L 17 14 L 15 14 Z M 7 16 L 9 16 L 9 18 L 7 18 Z M 11 16 L 13 16 L 13 18 L 11 18 Z M 15 16 L 17 16 L 17 18 L 15 18 Z" />
+            </group>
+        </vector>
+    </aapt:attr>
+    <target android:name="page">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="230"
+                android:interpolator="@android:interpolator/fast_out_linear_in"
+                android:propertyName="pathData"
+                android:valueFrom="M 19 4 L 18 4 L 18 2 L 16 2 L 16 4 L 8 4 L 8 2 L 6 2 L 6 4 L 5 4 C 3.89 4 3.01 4.9 3.01 6 L 3 20 C 3 21.1 3.89 22 5 22 L 19 22 C 20.1 22 21 21.1 21 20 L 21 6 C 21 4.9 20.1 4 19 4 Z M 5 6 L 19 6 L 19 8 L 5 8 Z M 5 10 L 19 10 L 19 20 L 5 20 Z M 7 12 L 9 12 L 9 14 L 7 14 Z M 11 12 L 13 12 L 13 14 L 11 14 Z M 15 12 L 17 12 L 17 14 L 15 14 Z M 7 16 L 9 16 L 9 18 L 7 18 Z M 11 16 L 13 16 L 13 18 L 11 18 Z M 15 16 L 17 16 L 17 18 L 15 18 Z"
+                android:valueTo="M 19 4 L 18 4 L 18 2 L 16 2 L 16 4 L 8 4 L 8 2 L 6 2 L 6 4 L 5 4 C 3.89 4 3.01 4.9 3.01 6 L 3 20 C 3 21.1 3.89 22 5 22 L 19 22 C 20.1 22 21 21.1 21 20 L 21 6 C 21 4.9 20.1 4 19 4 Z M 5 6 L 19 6 L 19 8 L 5 8 Z M 5 20 L 19 20 L 19 20 L 5 20 Z M 7 12 L 9 12 L 9 14 L 7 14 Z M 11 12 L 13 12 L 13 14 L 11 14 Z M 15 12 L 17 12 L 17 14 L 15 14 Z M 7 16 L 9 16 L 9 18 L 7 18 Z M 11 16 L 13 16 L 13 18 L 11 18 Z M 15 16 L 17 16 L 17 18 L 15 18 Z"
+                android:valueType="pathType" />
+        </aapt:attr>
+    </target>
+    <target android:name="calendar">
+        <aapt:attr name="android:animation">
+            <set android:ordering="sequentially">
+                <objectAnimator
+                    android:duration="200"
+                    android:propertyName="scaleY"
+                    android:valueFrom="1"
+                    android:valueTo="1"
+                    android:valueType="floatType" />
+                <objectAnimator
+                    android:duration="80"
+                    android:interpolator="@android:interpolator/fast_out_slow_in"
+                    android:propertyName="scaleY"
+                    android:valueFrom="1"
+                    android:valueTo="0.9"
+                    android:valueType="floatType" />
+                <objectAnimator
+                    android:duration="180"
+                    android:interpolator="@android:interpolator/fast_out_slow_in"
+                    android:propertyName="scaleY"
+                    android:valueFrom="0.9"
+                    android:valueTo="1"
+                    android:valueType="floatType" />
+            </set>
+        </aapt:attr>
+    </target>
+</animated-vector>

@@ -139,7 +139,7 @@ private fun IconImage() {
     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         Image(
             painter = MR.images.icon.toPainter(),
-            contentDescription = "icon",
+            contentDescription = null,
             modifier = Modifier.height(140.dp).padding(vertical = 8.dp),
         )
     }

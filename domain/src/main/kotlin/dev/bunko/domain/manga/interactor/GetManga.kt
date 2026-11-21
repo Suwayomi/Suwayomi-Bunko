@@ -42,10 +42,13 @@ class GetManga(
         }
         .singleOrNull()
 
-    fun asFlow(mangaId: Long) =
-        serverListeners.combineMangaUpdates(
-            mangaRepository.getManga(mangaId),
-        ) { mangaId in it }
+    fun asFlow(
+        mangaId: Long,
+        cacheFirst: Boolean = false,
+    ) = serverListeners.combineMangaUpdates(
+        mangaRepository.getManga(mangaId),
+        cached = if (cacheFirst) mangaRepository.getManga(mangaId, cacheFirst = true) else null,
+    ) { mangaId in it }
 
     fun asFlow(manga: Manga) =
         serverListeners.combineMangaUpdates(

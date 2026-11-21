@@ -81,7 +81,7 @@ fun SourceSettingsScreenContent(settings: ImmutableList<SourceSettingsView<*, *>
                     ),
                 ).asPaddingValues(),
             ) {
-                items(settings, { it.props.hashCode() }) {
+                items(settings, key = { it.index }, contentType = { it::class }) {
                     when (it) {
                         is CheckBox, is Switch -> {
                             TwoStatePreference(it, it is CheckBox)

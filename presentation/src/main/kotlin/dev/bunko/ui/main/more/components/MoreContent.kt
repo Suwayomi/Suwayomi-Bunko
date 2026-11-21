@@ -54,7 +54,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
@@ -106,9 +105,6 @@ fun MoreContent(
                     ),
                 ).asPaddingValues(),
             ) {
-                if (incognito) {
-                    item { IncognitoBanner() }
-                }
                 item {
                     val navigator = LocalNavigator.current
                     MoreHeaderCard(onClick = { navigator?.push(SettingsServerScreen()) })
@@ -118,7 +114,7 @@ fun MoreContent(
                         IncognitoItem(incognito, setIncognito)
                     }
                 }
-                item { MoreMenuGroup(listOf(MoreMenus.Downloads, MoreMenus.Offline)) }
+                item { MoreMenuGroup(listOf(MoreMenus.Downloads, MoreMenus.Offline, MoreMenus.Statistics)) }
                 item { MoreShortcuts() }
                 item { MoreMenuGroup(listOf(MoreMenus.About)) }
             }
@@ -227,20 +223,6 @@ private fun MoreHeaderCard(onClick: () -> Unit) {
 }
 
 @Composable
-private fun IncognitoBanner() {
-    Text(
-        text = stringResource(MR.strings.incognito_banner),
-        style = MaterialTheme.typography.labelMedium,
-        color = MaterialTheme.colorScheme.onTertiaryContainer,
-        textAlign = TextAlign.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.tertiaryContainer)
-            .padding(vertical = 4.dp),
-    )
-}
-
-@Composable
 private fun IncognitoItem(
     incognito: Boolean,
     setIncognito: (Boolean) -> Unit,
@@ -333,4 +315,5 @@ private fun MoreMenus.descriptionKey(): StringResource =
         MoreMenus.Downloads -> MR.strings.location_downloads_desc
         MoreMenus.Offline -> MR.strings.location_offline_desc
         MoreMenus.About -> MR.strings.location_about_desc
+        MoreMenus.Statistics -> MR.strings.location_statistics_desc
     }

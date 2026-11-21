@@ -72,11 +72,12 @@ fun LibraryMangaCompactGrid(
             verticalArrangement = Arrangement.spacedBy(LibraryGridSpacing),
             horizontalArrangement = Arrangement.spacedBy(LibraryGridSpacing),
         ) {
-            items(library, key = { it.id }) { manga ->
+            items(library, key = { it.id }, contentType = { "manga" }) { manga ->
                 LibraryMangaCompactGridItem(
-                    modifier = Modifier.libraryMangaClickable(
+                    modifier = Modifier.animateItem().libraryMangaClickable(
                         { onClickManga(manga.id) },
                         { onLongClickManga(manga.id) },
+                        clipShape = LibraryCoverShape,
                     ),
                     manga = manga,
                     selected = manga.id in selection,
@@ -115,8 +116,7 @@ private fun LibraryMangaCompactGridItem(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(mangaAspectRatio)
-            .libraryCoverFrame(selected) then modifier,
+            .aspectRatio(mangaAspectRatio) then modifier then Modifier.libraryCoverFrame(selected),
     ) {
         ImageLoaderImage(
             manga,

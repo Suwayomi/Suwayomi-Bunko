@@ -29,7 +29,7 @@ class InstallExtensionFile(
         }
         .collect()
 
-    fun asFlow(path: Path) = extensionRepository.installExtension(FileSystem.SYSTEM.source(path))
+    fun asFlow(path: Path) = extensionRepository.installExtension(FileSystem.SYSTEM.source(path), "extension.${path.name.substringAfterLast('.', "apk")}")
 
     companion object {
         private val log = logging()

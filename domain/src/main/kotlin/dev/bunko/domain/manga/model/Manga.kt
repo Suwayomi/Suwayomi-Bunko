@@ -43,6 +43,10 @@ data class Manga(
     val lastChapterReadTime: Long? = null,
     val age: Long?,
     val chaptersAge: Long?,
+    val bookmarkCount: Int? = null,
+    val latestUploadAt: Long? = null,
+    val latestFetchAt: Long? = null,
+    val lastReadAt: Long? = null,
 )
 
 @Immutable

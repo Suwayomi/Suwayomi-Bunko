@@ -7,6 +7,9 @@
 package dev.bunko.ui.base
 
 import dev.bunko.ui.settings.tracking.TrackerOAuth
+import dev.bunko.domain.schedule.AniListStatusStore
+import dev.bunko.ui.schedule.AniListStatusFile
+import okio.Path.Companion.toOkioPath
 import androidx.compose.runtime.ProvidedValue
 import androidx.compose.runtime.compositionLocalOf
 import dev.bunko.core.di.AppScope
@@ -65,6 +68,11 @@ interface UiComponent {
         DiskCache(FileSystem.SYSTEM) {
             configure(contextWrapper, "chapter_cache")
         }
+
+    @AppScope
+    @Provides
+    fun aniListStatusStoreFactory(): AniListStatusStore =
+        AniListStatusFile(contextWrapper.filesDir.toOkioPath() / "anilist_statuses", FileSystem.SYSTEM)
 
     @AppScope
     @Provides

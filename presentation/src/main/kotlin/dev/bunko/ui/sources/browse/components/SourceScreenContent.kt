@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
@@ -62,8 +63,10 @@ import dev.bunko.ui.sources.browse.filter.FilterCountBadge
 import dev.bunko.ui.sources.browse.filter.SourceFiltersSheet
 import dev.bunko.ui.sources.browse.filter.model.SourceFiltersView
 import dev.bunko.ui.sources.components.SourceFilterChip
+import dev.bunko.ui.library.components.LibrarySkeleton
+import dev.bunko.ui.main.components.bottomNav
 import dev.bunko.uicore.components.ErrorScreen
-import dev.bunko.uicore.components.LoadingScreen
+import dev.bunko.uicore.components.LoadStateCrossfade
 import dev.bunko.uicore.resources.stringResource
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -276,10 +279,56 @@ private fun MangaTable(
     onMangaClick: (Long) -> Unit,
     onMangaLongClick: (Manga) -> Unit,
 ) {
+    val phase = when {
+        isLoading -> TablePhase.Loading
+        mangas.isEmpty() && hasNextPage -> TablePhase.Failed
+        mangas.isEmpty() -> TablePhase.Empty
+        else -> TablePhase.Loaded
+    }
+    LoadStateCrossfade(phase, contentKey = { it }) { current ->
+        MangaTablePhase(
+            current,
+            displayMode,
+            gridColumns,
+            gridSize,
+            mangas,
+            hasNextPage,
+            pageFailed,
+            onLoadNextPage,
+            onRetry,
+            onMangaClick,
+            onMangaLongClick,
+        )
+    }
+}
+
+private enum class TablePhase { Loading, Failed, Empty, Loaded }
+
+@Composable
+private fun MangaTablePhase(
+    phase: TablePhase,
+    displayMode: DisplayMode,
+    gridColumns: Int,
+    gridSize: Int,
+    mangas: ImmutableList<Manga>,
+    hasNextPage: Boolean,
+    pageFailed: Boolean,
+    onLoadNextPage: () -> Unit,
+    onRetry: () -> Unit,
+    onMangaClick: (Long) -> Unit,
+    onMangaLongClick: (Manga) -> Unit,
+) {
     when {
-        isLoading -> LoadingScreen()
-        mangas.isEmpty() && hasNextPage -> ErrorScreen(stringResource(MR.strings.error_generic), retry = onRetry)
-        mangas.isEmpty() -> EmptyScreen(
+        phase == TablePhase.Loading -> LibrarySkeleton(
+            displayMode,
+            gridColumns,
+            gridSize,
+            contentPadding = WindowInsets.bottomNav.add(
+                WindowInsets.navigationBars.only(WindowInsetsSides.Bottom),
+            ).add(WindowInsets(left = 8.dp, top = 8.dp, right = 8.dp, bottom = 8.dp)).asPaddingValues(),
+        )
+        phase == TablePhase.Failed -> ErrorScreen(stringResource(MR.strings.error_generic), retry = onRetry)
+        phase == TablePhase.Empty -> EmptyScreen(
             message = stringResource(MR.strings.no_results_found),
             icon = Icons.Rounded.SearchOff,
             actionLabel = stringResource(MR.strings.action_retry),

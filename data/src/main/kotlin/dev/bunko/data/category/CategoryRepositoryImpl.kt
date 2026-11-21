@@ -19,6 +19,7 @@ import dev.bunko.data.graphql.ReorderCategoryMutation
 import dev.bunko.data.graphql.SetCategoryMetaMutation
 import dev.bunko.data.graphql.fragment.CategoryFragment
 import dev.bunko.data.manga.MangaRepositoryImpl.Companion.toManga
+import dev.bunko.data.util.toFlowWithCache
 import dev.bunko.domain.category.model.Category
 import dev.bunko.domain.category.service.CategoryRepository
 import dev.bunko.domain.manga.model.Manga
@@ -70,11 +71,11 @@ class CategoryRepositoryImpl(
                 data.updateMangaCategories!!.clientMutationId
             }
 
-    override fun getCategories(): Flow<List<Category>> =
+    override fun getCategories(cacheFirst: Boolean): Flow<List<Category>> =
         apolloClient.query(
             GetCategoriesQuery(),
         )
-            .toFlow()
+            .toFlowWithCache(cacheFirst)
             .map {
                 val data = it.dataAssertNoErrors
                 data.categories.nodes
@@ -128,11 +129,14 @@ class CategoryRepositoryImpl(
                 data.deleteCategory!!.clientMutationId
             }
 
-    override fun getMangaFromCategory(categoryId: Long): Flow<List<Manga>> =
+    override fun getMangaFromCategory(
+        categoryId: Long,
+        cacheFirst: Boolean,
+    ): Flow<List<Manga>> =
         apolloClient.query(
             GetCategoryMangaQuery(categoryId.toInt()),
         )
-            .toFlow()
+            .toFlowWithCache(cacheFirst)
             .map {
                 val data = it.dataAssertNoErrors
                 data.category.mangas.nodes.map { it.libraryMangaFragment.toManga() }.filter { it.inLibrary }

@@ -13,7 +13,10 @@ import okio.Source
 interface ExtensionRepository {
     fun getExtensionList(): Flow<List<Extension>>
 
-    fun installExtension(source: Source): Flow<Unit>
+    fun installExtension(
+        source: Source,
+        fileName: String,
+    ): Flow<Unit>
 
     fun installExtension(pkgName: String): Flow<Unit>
 

@@ -120,7 +120,6 @@
     <string name="channel_active">Activo</string>
     <string name="group_updates_channel_app">Actualizaciones de la App</string>
     <string name="host_basic_auth_username">Usuario para autenticación normal</string>
-    <string name="theme_amoled">AMOLED</string>
     <string name="auth_username">Usuario de autenticación</string>
     <string name="host_basic_auth_password">Clave de autenticación normal</string>
     <string name="location_about">Acerca de</string>
@@ -187,18 +186,8 @@
     <string name="group_updates_channel_ext">Actualizaciones de extensiones</string>
     <string name="chapter_downloading_progress">Descargando… (%1$d/%2$d)</string>
     <string name="theme_default">Predeterminado</string>
-    <string name="theme_legacy_blue">Legado Azul</string>
     <string name="display_compact">Cuadricula compacta</string>
     <string name="group_library">Biblioteca</string>
-    <string name="theme_green_apple">Manzana verde</string>
-    <string name="theme_lavender">Lavanda</string>
-    <string name="theme_midnight_dusk">Anochecer de medianoche</string>
-    <string name="theme_strawberry_daiquiri">Daiquiri de fresa</string>
-    <string name="theme_tako">Tako</string>
-    <string name="theme_tealturquoise">Verde azulado y turquesa</string>
-    <string name="theme_tidal_wave">Marea</string>
-    <string name="theme_yinyang">Yin &amp; Yang</string>
-    <string name="theme_yotsuba">Yotsuba</string>
     <string name="color_tertiary">Terciario</string>
     <string name="items_per_row_sub_adaptive">Columnas: Adaptable, Tamaño: %1$d</string>
     <string name="nav_l_shaped">En forma de L</string>

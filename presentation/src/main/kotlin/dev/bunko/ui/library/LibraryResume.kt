@@ -15,6 +15,8 @@ import dev.bunko.ui.reader.ReaderProgressSync
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
+import dev.bunko.core.di.AppScope
 import me.tatarka.inject.annotations.Inject
 
 @Immutable
@@ -33,12 +35,17 @@ internal fun resumeChapter(
     return if (!last.read) last else ordered.firstOrNull { it.index > last.index && !it.read }
 }
 
+@AppScope
 @Inject
 class LibraryResume(
     private val getLastReadChapter: GetLastReadChapter,
     private val getChapters: GetChapters,
     private val progressSync: ReaderProgressSync,
 ) {
+    @Volatile
+    var latest: ResumeEntry? = null
+        private set
+
     val entry: Flow<ResumeEntry?> = combine(getLastReadChapter.asFlow(), progressSync.status) { last, _ -> last }
         .mapLatest { last ->
             if (last == null) return@mapLatest null
@@ -47,5 +54,5 @@ class LibraryResume(
             resumeChapter(chapters, last.chapter.id)?.let { chapter ->
                 ResumeEntry(last.manga, chapter, inProgress = chapter.lastPageRead > 0)
             }
-        }
+        }.onEach { latest = it }
 }

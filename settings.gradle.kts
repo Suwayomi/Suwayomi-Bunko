@@ -21,5 +21,6 @@ include("domain")
 include("ui-core")
 include("presentation")
 include("android")
+include("baselineprofile")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

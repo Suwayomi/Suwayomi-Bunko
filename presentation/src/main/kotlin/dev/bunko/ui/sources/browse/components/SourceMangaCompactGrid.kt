@@ -7,7 +7,6 @@
 package dev.bunko.ui.sources.browse.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -45,6 +44,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.bunko.domain.manga.model.Manga
 import dev.bunko.ui.library.components.libraryCoverFrame
+import dev.bunko.ui.library.components.libraryMangaClickable
+import dev.bunko.ui.library.components.LibraryCoverShape
 import dev.bunko.ui.main.components.bottomNav
 import dev.bunko.uicore.components.VerticalScrollbar
 import dev.bunko.uicore.components.mangaAspectRatio
@@ -83,11 +84,12 @@ fun SourceMangaCompactGrid(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            items(mangas, key = { it.id }) { manga ->
+            items(mangas, key = { it.id }, contentType = { "manga" }) { manga ->
                 SourceMangaCompactGridItem(
-                    modifier = Modifier.combinedClickable(
-                        onClick = { onClickManga(manga.id) },
-                        onLongClick = { onLongClickManga(manga) },
+                    modifier = Modifier.animateItem().libraryMangaClickable(
+                        { onClickManga(manga.id) },
+                        { onLongClickManga(manga) },
+                        clipShape = LibraryCoverShape,
                     ),
                     manga = manga,
                     showTitle = showTitles,
@@ -123,8 +125,7 @@ private fun SourceMangaCompactGridItem(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(mangaAspectRatio)
-            .libraryCoverFrame() then modifier,
+            .aspectRatio(mangaAspectRatio) then modifier then Modifier.libraryCoverFrame(),
     ) {
         ImageLoaderImage(
             manga,

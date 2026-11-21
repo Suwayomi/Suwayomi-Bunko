@@ -29,8 +29,12 @@ class GetCategories(
         }
         .firstOrNull()
 
-    fun asFlow(dropDefault: Boolean = false) = serverListeners.combineCategoryManga(
-        categoryRepository.getCategories()
+    fun asFlow(
+        dropDefault: Boolean = false,
+        cacheFirst: Boolean = false,
+    ) = serverListeners.combineCategoryManga(
+        categoryRepository.getCategories(),
+        cached = if (cacheFirst) categoryRepository.getCategories(cacheFirst = true) else null,
     ).map { categories ->
         if (dropDefault) {
             categories.filterNot { it.name.equals("default", true) }

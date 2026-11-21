@@ -6,7 +6,24 @@
 
 package dev.bunko.ui.base.theme
 
+import android.content.Context
+import android.os.Build
+import androidx.annotation.ChecksSdkIntAtLeast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material.darkColors
+import androidx.compose.material.lightColors
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.runtime.Immutable
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import dev.bunko.core.prefs.Preference
+import dev.bunko.uicore.theme.DYNAMIC_THEME_ID
+import dev.bunko.uicore.theme.atTone
+import dev.bunko.uicore.theme.chroma
+import dev.bunko.uicore.theme.onColor
+import dev.bunko.uicore.theme.tone
 import androidx.compose.material.Colors
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material3.ColorScheme
@@ -19,14 +36,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.takeOrElse
 import dev.bunko.domain.ui.model.ThemeMode
 import dev.bunko.domain.ui.service.UiPreferences
 import dev.bunko.ui.base.LocalViewModels
 import dev.bunko.uicore.theme.ExtraColors
-import dev.bunko.uicore.theme.Theme
 import dev.bunko.uicore.theme.themes
 import dev.bunko.uicore.vm.ContextWrapper
 import dev.bunko.uicore.vm.ViewModel
@@ -40,22 +54,24 @@ import me.tatarka.inject.annotations.Inject
 private val DarkError = Color(0xFFF2B8B5)
 private val LightError = Color(0xFFB3261E)
 
-internal fun surfaceContainers(colors: Colors): Pair<Color, Color> {
-    val (low, high) = if (colors.isLight) 0.05f to 0.09f else 0.08f to 0.11f
-    return lerp(colors.surface, colors.onSurface, low) to lerp(colors.surface, colors.onSurface, high)
-}
+@get:ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
+val dynamicThemeSupported: Boolean
+    get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
+@Immutable
+data class AppColors(
+    val colors: Colors,
+    val extraColors: ExtraColors,
+    val scheme: ColorScheme,
+)
 
 @Composable
 fun AppTheme(content: @Composable () -> Unit) {
     val viewModels = LocalViewModels.current
     val vm = remember { viewModels.appThemeViewModel() }
-    val (colors, extraColors) = vm.getColors()
+    val (colors, extraColors, colorScheme) = vm.getColors()
     DisposableEffect(vm) {
         onDispose(vm::onDispose)
-    }
-
-    val colorScheme = remember(colors, extraColors.surfaceContainer, extraColors.surfaceContainerHigh) {
-        colors.toColorScheme(extraColors)
     }
 
     MaterialTheme(colors = colors) {
@@ -70,75 +86,61 @@ fun AppTheme(content: @Composable () -> Unit) {
     }
 }
 
-private fun Colors.toColorScheme(extra: ExtraColors): ColorScheme {
-    val container = if (isLight) {
-        lerp(Color.White, secondary, 0.2f)
-    } else {
-        lerp(Color.Black, secondary, 0.35f)
-    }
-    val onContainer = if (isLight) lerp(Color.Black, secondary, 0.3f) else lerp(Color.White, secondary, 0.15f)
-    val onSurfaceVariant = onSurface.copy(alpha = 0.7f)
-    val primaryContainer = if (isLight) lerp(Color.White, primary, 0.2f) else lerp(Color.Black, primary, 0.35f)
-    val onPrimaryContainer = if (isLight) lerp(Color.Black, primary, 0.3f) else lerp(Color.White, primary, 0.15f)
-    val outline = onSurface.copy(alpha = 0.5f)
-    val outlineVariant = onSurface.copy(alpha = 0.2f)
-    return if (isLight) {
-        lightColorScheme(
-            primary = primary,
-            onPrimary = onPrimary,
-            primaryContainer = primaryContainer,
-            onPrimaryContainer = onPrimaryContainer,
-            outline = outline,
-            outlineVariant = outlineVariant,
-            secondary = secondary,
-            onSecondary = onSecondary,
-            secondaryContainer = container,
-            onSecondaryContainer = onContainer,
-            background = background,
-            onBackground = onBackground,
-            surface = surface,
-            onSurface = onSurface,
-            surfaceVariant = extra.surfaceContainer,
-            onSurfaceVariant = onSurfaceVariant,
-            error = error,
-            onError = onError,
-            surfaceContainerLowest = surface,
-            surfaceContainerLow = extra.surfaceContainer,
-            surfaceContainer = extra.surfaceContainer,
-            surfaceContainerHigh = extra.surfaceContainerHigh,
-            surfaceContainerHighest = extra.surfaceContainerHigh,
-            surfaceBright = extra.surfaceContainerHigh,
-            surfaceDim = surface,
-        )
-    } else {
-        darkColorScheme(
-            primary = primary,
-            onPrimary = onPrimary,
-            primaryContainer = primaryContainer,
-            onPrimaryContainer = onPrimaryContainer,
-            outline = outline,
-            outlineVariant = outlineVariant,
-            secondary = secondary,
-            onSecondary = onSecondary,
-            secondaryContainer = container,
-            onSecondaryContainer = onContainer,
-            background = background,
-            onBackground = onBackground,
-            surface = surface,
-            onSurface = onSurface,
-            surfaceVariant = extra.surfaceContainer,
-            onSurfaceVariant = onSurfaceVariant,
-            error = error,
-            onError = onError,
-            surfaceContainerLowest = surface,
-            surfaceContainerLow = extra.surfaceContainer,
-            surfaceContainer = extra.surfaceContainer,
-            surfaceContainerHigh = extra.surfaceContainerHigh,
-            surfaceContainerHighest = extra.surfaceContainerHigh,
-            surfaceBright = extra.surfaceContainerHigh,
-            surfaceDim = surface,
-        )
-    }
+private fun presetScheme(
+    colors: Colors,
+    tertiary: Color,
+): ColorScheme {
+    val dark = !colors.isLight
+    fun container(c: Color) = c.atTone(if (dark) 30.0 else 90.0)
+    fun onContainer(c: Color) = c.atTone(if (dark) 90.0 else 10.0)
+
+    val background = colors.background
+    val bgTone = background.tone()
+    val neutral = if (background.chroma() < 3.0) colors.primary else background
+    fun surfaceAt(offset: Double) = neutral.atTone((bgTone + offset).coerceIn(0.0, 100.0), 10.0)
+    val step = if (dark) 1.0 else -1.0
+    val lowest = if (dark) background else Color.White
+    val onSurface = colors.onSurface
+
+    val base = if (dark) darkColorScheme() else lightColorScheme()
+    return base.copy(
+        primary = colors.primary,
+        onPrimary = colors.onPrimary,
+        primaryContainer = container(colors.primary),
+        onPrimaryContainer = onContainer(colors.primary),
+        inversePrimary = colors.primary.atTone(if (dark) 40.0 else 80.0),
+        secondary = colors.secondary,
+        onSecondary = colors.onSecondary,
+        secondaryContainer = container(colors.secondary),
+        onSecondaryContainer = onContainer(colors.secondary),
+        tertiary = tertiary,
+        onTertiary = tertiary.onColor(),
+        tertiaryContainer = container(tertiary),
+        onTertiaryContainer = onContainer(tertiary),
+        background = background,
+        onBackground = colors.onBackground,
+        surface = colors.surface,
+        onSurface = onSurface,
+        surfaceVariant = surfaceAt(step * 13),
+        onSurfaceVariant = neutral.atTone(if (dark) 80.0 else 30.0, 8.0),
+        surfaceTint = colors.primary,
+        inverseSurface = neutral.atTone(if (dark) 90.0 else 20.0, 6.0),
+        inverseOnSurface = neutral.atTone(if (dark) 20.0 else 95.0, 6.0),
+        error = colors.error,
+        onError = colors.onError,
+        errorContainer = container(colors.error),
+        onErrorContainer = onContainer(colors.error),
+        outline = neutral.atTone(if (dark) 60.0 else 50.0, 8.0),
+        outlineVariant = neutral.atTone(if (dark) 30.0 else 80.0, 8.0),
+        scrim = Color.Black,
+        surfaceBright = surfaceAt(step * 18),
+        surfaceDim = surfaceAt(if (dark) 0.0 else -11.0),
+        surfaceContainerLowest = lowest,
+        surfaceContainerLow = surfaceAt(step * 3),
+        surfaceContainer = surfaceAt(step * 5),
+        surfaceContainerHigh = surfaceAt(step * 9),
+        surfaceContainerHighest = surfaceAt(step * 13),
+    )
 }
 
 @Inject
@@ -156,14 +158,31 @@ class AppThemeViewModel(
     private val baseThemeJob = SupervisorJob()
     private val baseThemeScope = CoroutineScope(baseThemeJob)
 
+    init {
+        dropUnknownThemes()
+    }
+
     @Composable
-    fun getColors(): Pair<Colors, ExtraColors> {
+    fun getColors(): AppColors {
         val themeMode by themeMode.collectAsState()
         val lightTheme by lightTheme.collectAsState()
         val darkTheme by darkTheme.collectAsState()
         val pureBlack by pureBlack.collectAsState()
 
-        val baseTheme = getBaseTheme(themeMode, lightTheme, darkTheme)
+        val isLight = when (themeMode) {
+            ThemeMode.System -> !isSystemInDarkTheme()
+            ThemeMode.Light -> true
+            ThemeMode.Dark -> false
+        }
+        val themeId = if (isLight) lightTheme else darkTheme
+        if (themeId == DYNAMIC_THEME_ID && dynamicThemeSupported) {
+            val context = LocalContext.current
+            val configuration = LocalConfiguration.current
+            return remember(isLight, pureBlack, configuration) { dynamicAppColors(context, isLight, pureBlack) }
+        }
+
+        val baseTheme = themes.find { it.id == themeId && it.colors.isLight == isLight }
+            ?: themes.first { it.colors.isLight == isLight }
         val colors = remember(baseTheme.colors.isLight) {
             baseThemeJob.cancelChildren()
 
@@ -179,33 +198,37 @@ class AppThemeViewModel(
         val tertiary by colors.tertiaryStateFlow.collectAsState()
 
         val materialColors = getMaterialColors(baseTheme.colors, primary, secondary, pureBlack)
-        return materialColors to getExtraColors(baseTheme.extraColors, tertiary, materialColors)
+        val tertiaryColor = tertiary.takeOrElse { baseTheme.extraColors.tertiary }
+        val scheme = remember(materialColors, tertiaryColor) { presetScheme(materialColors, tertiaryColor) }
+        val extraColors = remember(scheme) {
+            baseTheme.extraColors.copy(
+                tertiary = scheme.tertiary,
+                onTertiary = scheme.onTertiary,
+                surfaceContainer = scheme.surfaceContainer,
+                surfaceContainerHigh = scheme.surfaceContainerHigh,
+            )
+        }
+        return AppColors(materialColors, extraColors, scheme)
     }
 
-    @Composable
-    private fun getBaseTheme(
-        themeMode: ThemeMode,
-        lightTheme: Int,
-        darkTheme: Int,
-    ): Theme {
-        fun getTheme(
-            id: Int,
+    private fun dropUnknownThemes() {
+        fun repair(
+            id: Preference<Int>,
             isLight: Boolean,
-        ): Theme =
-            themes.find { it.id == id && it.colors.isLight == isLight }
-                ?: themes.first { it.colors.isLight == isLight }
-
-        return when (themeMode) {
-            ThemeMode.System -> if (!isSystemInDarkTheme()) {
-                getTheme(lightTheme, true)
-            } else {
-                getTheme(darkTheme, false)
-            }
-
-            ThemeMode.Light -> getTheme(lightTheme, true)
-
-            ThemeMode.Dark -> getTheme(darkTheme, false)
+            accents: AppColorsPreference,
+        ) {
+            val value = id.get()
+            val known = value == 0 ||
+                (value == DYNAMIC_THEME_ID && dynamicThemeSupported) ||
+                themes.any { it.id == value && it.colors.isLight == isLight }
+            if (known) return
+            id.delete()
+            accents.primary.delete()
+            accents.secondary.delete()
+            accents.tertiary.delete()
         }
+        repair(uiPreferences.lightTheme(), true, uiPreferences.getLightColors())
+        repair(uiPreferences.darkTheme(), false, uiPreferences.getDarkColors())
     }
 
     private fun getMaterialColors(
@@ -221,8 +244,8 @@ class AppThemeViewModel(
             primaryVariant = primary,
             secondary = secondary,
             secondaryVariant = secondary,
-            onPrimary = if (primary.luminance() > 0.5) Color.Black else Color.White,
-            onSecondary = if (secondary.luminance() > 0.5) Color.Black else Color.White,
+            onPrimary = primary.onColor(),
+            onSecondary = secondary.onColor(),
         )
         return when {
             baseColors.isLight -> withAccents.copy(error = LightError, onError = Color.White)
@@ -236,17 +259,61 @@ class AppThemeViewModel(
         }
     }
 
-    private fun getExtraColors(
-        baseExtraColors: ExtraColors,
-        colorTertiary: Color,
-        colors: Colors,
-    ): ExtraColors {
-        val (container, containerHigh) = surfaceContainers(colors)
-        return baseExtraColors.copy(
-            tertiary = colorTertiary.takeOrElse { baseExtraColors.tertiary },
-            surfaceContainer = container,
-            surfaceContainerHigh = containerHigh,
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun dynamicAppColors(
+        context: Context,
+        isLight: Boolean,
+        pureBlack: Boolean,
+    ): AppColors {
+        val system = if (isLight) dynamicLightColorScheme(context) else dynamicDarkColorScheme(context)
+        val scheme = if (!isLight && pureBlack) {
+            system.copy(
+                background = Color.Black,
+                surface = Color.Black,
+                surfaceDim = Color.Black,
+                surfaceContainerLowest = Color.Black,
+            )
+        } else {
+            system
+        }
+        val colors = if (isLight) {
+            lightColors(
+                primary = scheme.primary,
+                primaryVariant = scheme.primaryContainer,
+                secondary = scheme.secondary,
+                secondaryVariant = scheme.secondaryContainer,
+                background = scheme.background,
+                surface = scheme.surface,
+                error = scheme.error,
+                onPrimary = scheme.onPrimary,
+                onSecondary = scheme.onSecondary,
+                onBackground = scheme.onBackground,
+                onSurface = scheme.onSurface,
+                onError = scheme.onError,
+            )
+        } else {
+            darkColors(
+                primary = scheme.primary,
+                primaryVariant = scheme.primaryContainer,
+                secondary = scheme.secondary,
+                secondaryVariant = scheme.secondaryContainer,
+                background = scheme.background,
+                surface = scheme.surface,
+                error = scheme.error,
+                onPrimary = scheme.onPrimary,
+                onSecondary = scheme.onSecondary,
+                onBackground = scheme.onBackground,
+                onSurface = scheme.onSurface,
+                onError = scheme.onError,
+            )
+        }
+        val extraColors = ExtraColors(
+            tertiary = scheme.tertiary,
+            onTertiary = scheme.onTertiary,
+            surfaceContainer = scheme.surfaceContainer,
+            surfaceContainerHigh = scheme.surfaceContainerHigh,
         )
+        return AppColors(colors, extraColors, scheme)
     }
 
     override fun onDispose() {

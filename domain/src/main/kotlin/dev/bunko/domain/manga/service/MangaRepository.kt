@@ -12,7 +12,10 @@ import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.flow.Flow
 
 interface MangaRepository {
-    fun getManga(mangaId: Long): Flow<Manga>
+    fun getManga(
+        mangaId: Long,
+        cacheFirst: Boolean = false,
+    ): Flow<Manga>
 
     fun refreshManga(mangaId: Long): Flow<Manga>
 

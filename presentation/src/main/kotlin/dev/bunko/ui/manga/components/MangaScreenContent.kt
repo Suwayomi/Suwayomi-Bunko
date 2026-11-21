@@ -82,7 +82,12 @@ import dev.bunko.ui.reader.rememberReaderLauncher
 import dev.bunko.uicore.components.BottomActionItem
 import dev.bunko.uicore.components.BottomActionMenu
 import dev.bunko.uicore.components.ErrorScreen
-import dev.bunko.uicore.components.LoadingScreen
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import dev.bunko.uicore.theme.BunkoMotion
+import dev.bunko.uicore.components.RefreshBox
 import dev.bunko.uicore.components.VerticalScrollbar
 import dev.bunko.uicore.components.rememberScrollbarAdapter
 import dev.bunko.uicore.icons.BunkoAssets
@@ -103,9 +108,6 @@ import dev.bunko.domain.chapter.model.ChapterSort
 import dev.bunko.domain.chapter.model.chapterGap
 import dev.bunko.domain.library.model.FilterState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -250,19 +252,11 @@ fun MangaScreenContent(
             )
         },
     ) { padding ->
-        val pullState = rememberPullToRefreshState()
-        PullToRefreshBox(
+        RefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = refreshManga,
-            state = pullState,
             modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
-            indicator = {
-                PullToRefreshDefaults.Indicator(
-                    state = pullState,
-                    isRefreshing = isRefreshing,
-                    modifier = Modifier.align(Alignment.TopCenter).padding(top = padding.calculateTopPadding()),
-                )
-            },
+            indicatorTopPadding = padding.calculateTopPadding(),
         ) {
             manga.let { manga ->
                 if (manga != null) {
@@ -339,7 +333,11 @@ fun MangaScreenContent(
                                         )
                                     }
                                 }
-                            } else if (!isLoading) {
+                            } else if (isLoading) {
+                                item(key = "chapter-skeleton", contentType = "skeleton") {
+                                    ChapterListSkeleton()
+                                }
+                            } else {
                                 item {
                                     ErrorScreen(
                                         stringResource(MR.strings.no_chapters_found),
@@ -392,8 +390,12 @@ fun MangaScreenContent(
                     ErrorScreen(stringResource(MR.strings.failed_manga_fetch), retry = loadManga)
                 }
             }
-            if (isLoading) {
-                LoadingScreen()
+            AnimatedVisibility(
+                visible = isLoading && manga == null,
+                enter = fadeIn(tween(BunkoMotion.MEDIUM_MS)),
+                exit = fadeOut(tween(BunkoMotion.MEDIUM_MS)),
+            ) {
+                MangaScreenSkeleton(topInset = padding.calculateTopPadding())
             }
         }
     }

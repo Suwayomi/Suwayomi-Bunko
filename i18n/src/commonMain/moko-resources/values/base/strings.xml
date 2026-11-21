@@ -71,6 +71,23 @@
     <string name="location_settings">Settings</string>
     <string name="location_categories">Categories</string>
     <string name="location_more">More</string>
+    <string name="location_statistics">Statistics</string>
+    <string name="location_statistics_desc">Library, chapter and tracking totals</string>
+    <string name="statistics_overview">Overview</string>
+    <string name="statistics_entries">Entries</string>
+    <string name="statistics_chapters">Chapters</string>
+    <string name="statistics_trackers">Trackers</string>
+    <string name="statistics_in_library">In library</string>
+    <string name="statistics_started">Started</string>
+    <string name="statistics_completed">Completed entries</string>
+    <string name="statistics_in_global_update">In global update</string>
+    <string name="statistics_local">Local</string>
+    <string name="statistics_total">Total</string>
+    <string name="statistics_read">Read</string>
+    <string name="statistics_downloaded">Downloaded</string>
+    <string name="statistics_tracked">Tracked entries</string>
+    <string name="statistics_mean_score">Mean score</string>
+    <string name="statistics_trackers_used">Trackers used</string>
     <string name="location_about">About</string>
 
     <!-- Categories Menu -->
@@ -112,10 +129,18 @@
     <string name="filter_downloaded">Downloaded</string>
     <string name="filter_unread">Unread</string>
     <string name="filter_completed">Completed</string>
+    <string name="filter_started">Started</string>
+    <string name="filter_bookmarked">Bookmarked</string>
 
     <string name="sort_alphabetical">Alphabetically</string>
     <string name="sort_unread">Unread</string>
     <string name="sort_date_added">Date added</string>
+    <string name="sort_last_read">Last read</string>
+    <string name="sort_latest_chapter">Latest uploaded chapter</string>
+    <string name="sort_latest_fetched">Latest fetched chapter</string>
+    <string name="sort_last_update_check">Last update check</string>
+    <string name="sort_total_chapters">Total chapters</string>
+    <string name="sort_downloaded">Downloaded chapters</string>
 
     <string name="display_badges">Badges</string>
     <string name="display_badge_downloaded">Downloaded chapters</string>
@@ -281,6 +306,8 @@
     <string name="library_delete_downloads_incomplete">Some series couldn\'t be checked, their downloads were kept</string>
     <string name="library_no_matches">No matches for your search or filters</string>
     <string name="library_on_device_only">Only series saved on this device</string>
+    <string name="library_on_device_banner">Downloaded only</string>
+    <string name="offline_banner">Offline</string>
     <string name="sync_offline">Offline · %1$d waiting to sync</string>
     <string name="sync_auth_needed">Sign in again · %1$d waiting to sync</string>
     <string name="sync_waiting">Syncing %1$d…</string>
@@ -297,6 +324,7 @@
     <string name="server_url_resolved">Connects to %1$s</string>
     <string name="server_port_label">Port</string>
     <string name="server_port_invalid">1–65535</string>
+    <string name="server_port_auto">Auto</string>
     <string name="server_path_prefix_label">Path prefix</string>
     <string name="server_fallback_url_label">Fallback URL</string>
     <string name="optional">Optional</string>
@@ -403,17 +431,16 @@
     <string name="theme_pure_black">Pure black dark mode</string>
     <string name="theme_pure_black_sub">Use a #000000 background with any dark theme, for AMOLED screens</string>
     <string name="theme_default">Default</string>
-    <string name="theme_legacy_blue">Legacy Blue</string>
-    <string name="theme_amoled">AMOLED</string>
-    <string name="theme_green_apple">Green Apple</string>
-    <string name="theme_lavender">Lavender</string>
-    <string name="theme_midnight_dusk">Midnight Dusk</string>
-    <string name="theme_strawberry_daiquiri">Strawberry Daiquiri</string>
-    <string name="theme_tako">Tako</string>
-    <string name="theme_tealturquoise">Teal &amp; Turquoise</string>
-    <string name="theme_tidal_wave">Tidal Wave</string>
-    <string name="theme_yinyang">Yin &amp; Yang</string>
-    <string name="theme_yotsuba">Yotsuba</string>
+    <string name="theme_dynamic">Dynamic</string>
+    <string name="theme_washi">Washi</string>
+    <string name="theme_matcha">Matcha</string>
+    <string name="theme_yozakura">Yozakura</string>
+    <string name="theme_aizome">Aizome</string>
+    <string name="theme_kintsugi">Kintsugi</string>
+    <string name="theme_arcade">Arcade</string>
+    <string name="theme_newsprint">Newsprint</string>
+    <string name="theme_coral_reef">Coral Reef</string>
+    <string name="theme_dynamic_colors_note">Colors come from your wallpaper while the Dynamic theme is selected</string>
     <string name="color_primary">Primary</string>
     <string name="color_primary_sub">Displayed most frequently across your app</string>
     <string name="color_secondary">Secondary</string>
@@ -550,6 +577,8 @@
     <string name="backup_ttl_sub">How long to keep a specific backup, in days, 0 to disable</string>
     <string name="backup_time">Backup time</string>
     <string name="backup_time_sub">When to run the automatic backup</string>
+    <string name="flaresolverr_enabled">FlareSolverr enabled</string>
+    <string name="flaresolverr_enabled_sub">Use a FlareSolverr instance to bypass Cloudflare. Manual setup required</string>
     <string name="flaresolverr_url">FlareSolverr server url</string>
     <string name="flaresolverr_timeout">FlareSolverr request timeout</string>
     <string name="flaresolverr_session_name">FlareSolverr session name</string>
@@ -576,6 +605,7 @@
     <string name="pinned">Pinned</string>
     <string name="action_pin">Pin</string>
     <string name="action_unpin">Unpin</string>
+    <string name="global_search_no_pinned">No pinned sources yet. Pin sources in Browse to search only those.</string>
     <string name="available">Available</string>
     <string name="updates_available">Updates available</string>
     <string name="update_available">Update available</string>
