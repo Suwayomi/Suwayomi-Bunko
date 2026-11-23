@@ -17,6 +17,7 @@ import dev.bunko.domain.manga.model.MangaMeta
 import dev.bunko.domain.manga.model.MangaStatus
 import dev.bunko.domain.manga.model.UpdateStrategy
 import dev.bunko.domain.manga.service.MangaRepository
+import dev.bunko.domain.source.model.Source
 import dev.bunko.domain.server.Http
 import dev.bunko.domain.server.HttpNoAuth
 import dev.bunko.domain.server.model.isAbsoluteHttpUrl
@@ -50,7 +51,7 @@ class MangaRepositoryImpl(
             .toFlowWithCache(cacheFirst)
             .map {
                 val data = it.dataAssertNoErrors
-                data.manga.mangaFragment.toManga()
+                data.manga.mangaFragment.toManga(data.manga.source?.sourceFragment?.toSource())
             }
 
     override fun refreshManga(mangaId: Long): Flow<Manga> =
@@ -60,7 +61,8 @@ class MangaRepositoryImpl(
             .toFlow()
             .map {
                 val data = it.dataAssertNoErrors
-                data.fetchManga!!.manga.mangaFragment.toManga()
+                val manga = data.fetchManga!!.manga
+                manga.mangaFragment.toManga(manga.source?.sourceFragment?.toSource())
             }
 
     override fun getMangaLibrary(mangaId: Long): Flow<Manga> =
@@ -135,7 +137,7 @@ class MangaRepositoryImpl(
                 .onFailure { log.warn(it) { "Ignoring unreadable chapter options" } }
                 .getOrNull()
 
-        internal fun MangaFragment.toManga(): Manga =
+        internal fun MangaFragment.toManga(source: Source? = null): Manga =
             Manga(
                 id = id.toLong(),
                 sourceId = sourceId,
@@ -158,7 +160,7 @@ class MangaRepositoryImpl(
                     GqlMangaStatus.UNKNOWN, GqlMangaStatus.UNKNOWN__ -> MangaStatus.UNKNOWN
                 },
                 inLibrary = inLibrary,
-                source = null,
+                source = source,
                 updateStrategy = when (updateStrategy) {
                     GqlUpdateStrategy.ALWAYS_UPDATE -> UpdateStrategy.ALWAYS_UPDATE
                     GqlUpdateStrategy.ONLY_FETCH_ONCE -> UpdateStrategy.ONLY_FETCH_ONCE

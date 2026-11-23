@@ -2,6 +2,9 @@ mutation RefreshManga($id: Int!) {
   fetchManga(input: {id: $id}) {
     manga {
       ...MangaFragment
+      source {
+        ...SourceFragment
+      }
     }
   }
 }
@@ -9,6 +12,9 @@ mutation RefreshManga($id: Int!) {
 query GetManga($id: Int!) {
   manga(id: $id) {
     ...MangaFragment
+    source {
+      ...SourceFragment
+    }
   }
 }
 

@@ -69,6 +69,12 @@ mutation BindTrack($mangaId: Int!, $trackerId: Int!, $remoteId: LongString!) {
   }
 }
 
+mutation TrackProgress($mangaId: Int!) {
+  trackProgress(input: {mangaId: $mangaId}) {
+    clientMutationId
+  }
+}
+
 mutation UpdateTrack($recordId: Int!, $status: Int, $scoreString: String, $lastChapterRead: Float) {
   updateTrack(input: {recordId: $recordId, status: $status, scoreString: $scoreString, lastChapterRead: $lastChapterRead}) {
     trackRecord {

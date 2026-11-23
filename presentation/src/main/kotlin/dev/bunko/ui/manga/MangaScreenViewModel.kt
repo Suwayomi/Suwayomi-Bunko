@@ -114,9 +114,12 @@ class MangaScreenViewModel(
     val offlineStates = offlineChapters.states
 
     private val chapterDefaults = libraryPreferences.chapterListDefaults()
+
+    // changes() only fires on writes; combine needs a current value or it never emits
+    private val chapterDefaultsState = chapterDefaults.stateIn(scope)
     private val localOptions = MutableStateFlow<LocalOptions>(LocalOptions.Stored)
 
-    val chapterOptions = combine(manga, localOptions, chapterDefaults.changes()) { manga, local, default ->
+    val chapterOptions = combine(manga, localOptions, chapterDefaultsState) { manga, local, default ->
         when (local) {
             LocalOptions.Stored -> manga?.meta?.chapterOptions ?: default
             LocalOptions.FollowDefault -> default
@@ -124,7 +127,7 @@ class MangaScreenViewModel(
         }
     }.stateIn(scope, SharingStarted.Eagerly, chapterDefaults.get())
 
-    val chapterOptionsCustomised = combine(chapterOptions, chapterDefaults.changes()) { options, default -> options != default }
+    val chapterOptionsCustomised = combine(chapterOptions, chapterDefaultsState) { options, default -> options != default }
         .stateIn(scope, SharingStarted.Eagerly, false)
 
     val displayChapters = combine(chapters, chapterOptions, offlineStates) { chapters, options, offline ->

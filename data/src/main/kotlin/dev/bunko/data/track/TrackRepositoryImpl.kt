@@ -15,6 +15,7 @@ import dev.bunko.data.graphql.LoginTrackerCredentialsMutation
 import dev.bunko.data.graphql.LoginTrackerOAuthMutation
 import dev.bunko.data.graphql.LogoutTrackerMutation
 import dev.bunko.data.graphql.SearchTrackerQuery
+import dev.bunko.data.graphql.TrackProgressMutation
 import dev.bunko.data.graphql.UnbindTrackMutation
 import dev.bunko.data.graphql.UpdateTrackMutation
 import dev.bunko.data.graphql.fragment.TrackRecordFragment
@@ -72,6 +73,10 @@ class TrackRepositoryImpl(
             ),
         ).execute().dataOrRejected
             .updateTrack.trackRecord?.trackRecordFragment?.toTrackRecord()
+
+    override suspend fun syncProgress(mangaId: Long) {
+        apolloClient.mutation(TrackProgressMutation(mangaId.toInt())).execute().dataOrRejected
+    }
 
     override suspend fun unbind(recordId: Int, deleteRemote: Boolean) {
         apolloClient.mutation(UnbindTrackMutation(recordId, deleteRemote.toOptional())).execute().dataOrRejected

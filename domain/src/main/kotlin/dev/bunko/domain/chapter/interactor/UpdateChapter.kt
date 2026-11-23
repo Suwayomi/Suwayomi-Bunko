@@ -9,6 +9,7 @@ package dev.bunko.domain.chapter.interactor
 import dev.bunko.domain.ServerListeners
 import dev.bunko.domain.chapter.model.Chapter
 import dev.bunko.domain.chapter.service.ChapterRepository
+import dev.bunko.domain.track.interactor.SyncTrackProgress
 import com.diamondedge.logging.logging
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
@@ -20,6 +21,7 @@ import kotlin.jvm.JvmName
 class UpdateChapter(
     private val chapterRepository: ChapterRepository,
     private val serverListeners: ServerListeners,
+    private val syncTrackProgress: SyncTrackProgress,
 ) {
     suspend fun await(
         chapterId: Long,
@@ -87,7 +89,10 @@ class UpdateChapter(
         bookmarked = bookmarked,
         read = read,
         lastPageRead = lastPageRead,
-    ).onEach { serverListeners.updateManga(mangaId ?: -1) }
+    ).onEach {
+        serverListeners.updateManga(mangaId ?: -1)
+        if (read == true && mangaId != null) syncTrackProgress.request(listOf(mangaId))
+    }
 
     fun asFlow(
         chapter: Chapter,
@@ -99,7 +104,10 @@ class UpdateChapter(
         bookmarked = bookmarked,
         read = read,
         lastPageRead = lastPageRead,
-    ).onEach { serverListeners.updateManga(chapter.mangaId) }
+    ).onEach {
+        serverListeners.updateManga(chapter.mangaId)
+        if (read == true) syncTrackProgress.request(listOf(chapter.mangaId))
+    }
 
     fun asFlow(
         chapterIds: List<Long>,
@@ -112,7 +120,10 @@ class UpdateChapter(
         bookmarked = bookmarked,
         read = read,
         lastPageRead = lastPageRead,
-    ).onEach { serverListeners.updateManga(mangaIds.orEmpty()) }
+    ).onEach {
+        serverListeners.updateManga(mangaIds.orEmpty())
+        if (read == true) syncTrackProgress.request(mangaIds.orEmpty())
+    }
 
     @JvmName("asFlowChapters")
     fun asFlow(
@@ -125,7 +136,11 @@ class UpdateChapter(
         bookmarked = bookmarked,
         read = read,
         lastPageRead = lastPageRead,
-    ).onEach { serverListeners.updateManga(chapters.map { it.mangaId }.distinct()) }
+    ).onEach {
+        val mangaIds = chapters.map { it.mangaId }.distinct()
+        serverListeners.updateManga(mangaIds)
+        if (read == true) syncTrackProgress.request(mangaIds)
+    }
 
     companion object {
         private val log = logging()

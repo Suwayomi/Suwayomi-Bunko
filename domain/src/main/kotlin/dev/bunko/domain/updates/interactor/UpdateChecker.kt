@@ -58,10 +58,23 @@ class UpdateChecker(
     }
 
     private fun isNewVersion(versionTag: String): Boolean {
-        val newVersion = versionTag.replace("[^\\d.]".toRegex(), "")
-
-        return newVersion != BuildConfig.VERSION
+        val latest = versionParts(versionTag) ?: return false
+        val current = versionParts(BuildConfig.VERSION) ?: return false
+        for (i in 0 until maxOf(latest.size, current.size)) {
+            val a = latest.getOrElse(i) { 0 }
+            val b = current.getOrElse(i) { 0 }
+            if (a != b) return a > b
+        }
+        return false
     }
+
+    // "v1.2.0" and "1.2.0-rc1" both read as [1, 2, 0]; anything unparseable never counts as an update
+    private fun versionParts(version: String): List<Int>? =
+        version.removePrefix("v")
+            .substringBefore('-')
+            .substringBefore('+')
+            .split('.')
+            .map { it.toIntOrNull() ?: return null }
 
     companion object {
         private const val GITHUB_REPO = "Suwayomi/Suwayomi-Bunko"

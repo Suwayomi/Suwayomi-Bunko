@@ -22,6 +22,8 @@ interface TrackRepository {
 
     suspend fun update(recordId: Int, update: TrackUpdate): TrackRecord?
 
+    suspend fun syncProgress(mangaId: Long)
+
     suspend fun unbind(recordId: Int, deleteRemote: Boolean)
 
     suspend fun loginOAuth(trackerId: Int, callbackUrl: String): Boolean

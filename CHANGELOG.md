@@ -2,6 +2,16 @@
 
 all notable changes to bunko, newest first.
 
+## 1.1.1
+
+updates in place over 1.1.0.
+
+### fixed
+
+- **trackers auto update progress.** finishing a chapter, or marking chapters read by hand, now moves anilist, myanimelist and other trackers forward on their own. trackers only ever move forward, and a tracker that's down never blocks your progress.
+- **entry filters work.** filter, sort and display in an entry's chapter sheet now apply as you tap. taps made while they were broken were still saved, so if a title suddenly shows fewer chapters than expected, reset it from the ⋮ menu in that sheet.
+- **source on the entry screen.** the entry header shows which source a title comes from, next to its status.
+
 ## 1.1.0
 
 updates in place over 1.0.0; your settings carry over untouched.

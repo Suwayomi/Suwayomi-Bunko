@@ -6,7 +6,10 @@
 
 package dev.bunko.android.data.update
 
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
+import androidx.core.net.toUri
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -41,10 +44,18 @@ class UpdateCheckWorker(
                 }
 
             if (update is Update.UpdateFound) {
+                val openRelease = PendingIntent.getActivity(
+                    context,
+                    0,
+                    Intent(Intent.ACTION_VIEW, update.release.releaseLink.toUri()),
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+                )
                 context.notificationBuilder(Notifications.CHANNEL_APP_UPDATE) {
                     setContentTitle(MR.strings.new_update_title.desc().toString(context))
                     setContentText(update.release.version)
                     setSmallIcon(android.R.drawable.stat_sys_download_done)
+                    setContentIntent(openRelease)
+                    setAutoCancel(true)
                 }.let {
                     context.notificationManager.notify(Notifications.ID_UPDATES_TO_APP, it.build())
                 }
