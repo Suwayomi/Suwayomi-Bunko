@@ -14,7 +14,7 @@ plugins {
 
 allprojects {
     group = "dev.bunko"
-    version = "1.1.1"
+    version = "1.1.2"
 
     dependencies {
         modules {

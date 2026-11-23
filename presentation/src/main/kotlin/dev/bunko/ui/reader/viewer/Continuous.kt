@@ -134,7 +134,11 @@ fun ContinuousReader(
                 false -> Modifier.height(maxSize.dp)
             }
         } else {
-            Modifier
+            when (pageContentScale) {
+                ContentScale.FillWidth -> Modifier.fillMaxWidth()
+                ContentScale.FillHeight -> Modifier.fillMaxHeight()
+                else -> Modifier
+            }
         }
         val contentPadding = when (direction) {
             Direction.Right -> PaddingValues(end = padding.dp)
@@ -224,6 +228,7 @@ private suspend fun LazyListState.autoScroll(pxPerSecond: Float) {
         } catch (e: CancellationException) {
             currentCoroutineContext().ensureActive()
         }
+        withFrameNanos { }
         snapshotFlow { isScrollInProgress }.first { !it }
     }
 }

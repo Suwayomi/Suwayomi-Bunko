@@ -383,7 +383,10 @@ fun ReaderHudMenu(
                 navigationViewer = navigationViewer,
                 currentPage = currentPage,
                 currentPageOffset = currentPageOffset,
-                navigateTap = navigateTap,
+                navigateTap = { navigation ->
+                    if (autoScroll && !readerMenuOpen) setAutoScroll(false)
+                    navigateTap(navigation)
+                },
                 onLongPress = onLongPress,
                 pageEmitterHolder = pageEmitterHolder,
                 retry = retry,

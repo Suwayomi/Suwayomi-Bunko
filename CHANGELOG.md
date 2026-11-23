@@ -2,6 +2,15 @@
 
 all notable changes to bunko, newest first.
 
+## 1.1.2
+
+updates in place over 1.1.1.
+
+### fixed
+
+- **force-fit width in the webtoon reader.** with force-fit on and max width unrestricted, every page now fills the screen width, not just the first.
+- **auto-scroll.** tapping the screen while it runs no longer freezes the app. a tap now pauses it.
+
 ## 1.1.1
 
 updates in place over 1.1.0.
