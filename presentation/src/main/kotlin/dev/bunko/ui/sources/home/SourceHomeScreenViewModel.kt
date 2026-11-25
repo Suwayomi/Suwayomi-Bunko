@@ -10,6 +10,7 @@ import dev.bunko.ui.base.userMessage
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.intl.Locale
 import dev.bunko.core.lang.displayName
+import dev.bunko.domain.ServerListeners
 import dev.bunko.domain.source.interactor.GetSourceList
 import dev.bunko.domain.source.model.Source
 import dev.bunko.domain.source.service.CatalogPreferences
@@ -38,6 +39,7 @@ import me.tatarka.inject.annotations.Inject
 @Inject
 class SourceHomeScreenViewModel(
     private val getSourceList: GetSourceList,
+    private val serverListeners: ServerListeners,
     catalogPreferences: CatalogPreferences,
     contextWrapper: ContextWrapper,
     @Assisted private val savedStateHandle: SavedStateHandle,
@@ -113,16 +115,18 @@ class SourceHomeScreenViewModel(
     }
 
     private fun getSources() {
-        getSourceList.asFlow()
-            .onEach {
-                installedSources.value = it
-                _isLoading.value = false
-            }
-            .catch {
-                toast(it.userMessage.toPlatformString())
-                log.warn(it) { "Error getting sources" }
-                _isLoading.value = false
-            }
+        serverListeners.combineSources(
+            getSourceList.asFlow()
+                .onEach {
+                    installedSources.value = it
+                    _isLoading.value = false
+                }
+                .catch {
+                    toast(it.userMessage.toPlatformString())
+                    log.warn(it) { "Error getting sources" }
+                    _isLoading.value = false
+                },
+        )
             .launchIn(scope)
     }
 

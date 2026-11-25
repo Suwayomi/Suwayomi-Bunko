@@ -352,7 +352,11 @@ private fun Synopsis(
     expanded: Boolean,
     onToggle: () -> Unit,
 ) {
-    val hasDescription = !manga.description.isNullOrEmpty()
+    val linkColor = MaterialTheme.colorScheme.primary
+    val description = remember(manga.description, linkColor, expanded) {
+        manga.description?.let { parseDescription(it, linkColor, compact = !expanded) }?.takeIf { it.isNotEmpty() }
+    }
+    val hasDescription = description != null
     Column(Modifier.fillMaxWidth().padding(top = 8.dp).animateContentSize()) {
         if (hasDescription) {
             Row(
@@ -367,7 +371,7 @@ private fun Synopsis(
                 verticalAlignment = Alignment.Top,
             ) {
                 Text(
-                    text = manga.description!!,
+                    text = description!!,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = if (expanded) Int.MAX_VALUE else 3,

@@ -2,6 +2,24 @@
 
 all notable changes to bunko, newest first.
 
+## 1.1.3
+
+updates in place over 1.1.2.
+
+### new
+
+- **migration.** move a title to another source from the entry's ⋮ menu, or from browse → migrate, which lists your library by source. read chapters, bookmarks, categories and trackers come along. migrate replaces the old entry, copy keeps both.
+- **hide continue reading.** library → display, or settings → library, turns the floating card off.
+- **formatted descriptions.** bold, italics, lists, headings and links in entry descriptions now render properly.
+
+### fixed
+
+- **sharp manhwa pages.** tall webtoon strips load at full resolution instead of blurry.
+- **chapter swipes.** swiping into the next chapter starts on its first page.
+- **download queue.** each chapter shows once, with its real progress.
+- **download ring.** the progress ring fills in the entry's accent colour.
+- **extensions.** only the one you install shows a spinner, and its sources appear in the sources tab right away.
+
 ## 1.1.2
 
 updates in place over 1.1.1.

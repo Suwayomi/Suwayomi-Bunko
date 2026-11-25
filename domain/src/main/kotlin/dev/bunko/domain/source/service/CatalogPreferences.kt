@@ -20,6 +20,14 @@ class CatalogPreferences(
 
     fun globalSearchPinnedOnly(): Preference<Boolean> = preferenceStore.getBoolean("global_search_pinned_only", false)
 
+    fun migrateChapters(): Preference<Boolean> = preferenceStore.getBoolean("migrate_chapters", true)
+
+    fun migrateCategories(): Preference<Boolean> = preferenceStore.getBoolean("migrate_categories", true)
+
+    fun migrateTracking(): Preference<Boolean> = preferenceStore.getBoolean("migrate_tracking", true)
+
+    fun migrateDeleteDownloads(): Preference<Boolean> = preferenceStore.getBoolean("migrate_delete_downloads", false)
+
     fun displayMode(): Preference<DisplayMode> =
         preferenceStore.getJsonObject(
             "display_mode",

@@ -30,4 +30,5 @@ class LibrarySettingsViewModel(
     val downloadBadges = libraryPreferences.downloadBadge().asStateFlow()
     val languageBadges = libraryPreferences.languageBadge().asStateFlow()
     val localBadges = libraryPreferences.localBadge().asStateFlow()
+    val showContinueReading = libraryPreferences.showContinueReading().asStateFlow()
 }

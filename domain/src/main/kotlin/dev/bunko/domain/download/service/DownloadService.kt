@@ -55,8 +55,8 @@ class DownloadService(
                         DownloadUpdateType.QUEUED -> {
                             update.download?.let { download ->
                                 downloadQueue.update {
-                                    it.toMutableList().apply {
-                                        add(download.position.coerceAtMost(it.size), download)
+                                    it.filter { it.chapter.id != download.chapter.id }.toMutableList().apply {
+                                        add(download.position.coerceIn(0, size), download)
                                     }
                                 }
                             }
@@ -90,7 +90,7 @@ class DownloadService(
                                 downloadQueue.update {
                                     it.map { chapter ->
                                         if (chapter.chapter.id == download.chapter.id) {
-                                            chapter.copy(progress = download.progress)
+                                            chapter.copy(progress = download.progress, state = download.state, chapter = download.chapter)
                                         } else {
                                             chapter
                                         }
@@ -110,7 +110,7 @@ class DownloadService(
                                     if (index != -1) {
                                         it.toMutableList().apply {
                                             removeAt(index)
-                                            add(download.position.coerceAtMost(it.size), download)
+                                            add(download.position.coerceIn(0, size), download)
                                         }.toList()
                                     } else it
                                 }

@@ -147,6 +147,7 @@
     <string name="display_badge_unread">Unread chapters</string>
     <string name="display_badge_language">Language</string>
     <string name="display_badge_local">Local manga</string>
+    <string name="display_continue_reading">Show "Continue reading" button</string>
     <string name="local_badge">Local</string>
 
     <!-- Manga Menu -->
@@ -693,4 +694,23 @@
     <string name="tap_invert_both">Both</string>
     <string name="items_per_row_portrait">Items per row (portrait)</string>
     <string name="items_per_row_landscape">Items per row (landscape)</string>
+    <string name="action_migrate">Migrate</string>
+    <string name="migrate_copy">Copy</string>
+    <string name="migrate_title">Migrate %1$s</string>
+    <string name="migrate_empty">No library entries to migrate</string>
+    <string name="migrate_source_entries">%1$d in library</string>
+    <string name="migrate_unknown_source">Unknown source (%1$s)</string>
+    <string name="migrate_dialog_title">Migrate to %1$s?</string>
+    <string name="migrate_dialog_text">From %1$s to %2$s. Migrate moves the entry and removes the old one from the library, copy keeps both.</string>
+    <string name="migrate_option_chapters">Read chapters and bookmarks</string>
+    <string name="migrate_option_categories">Categories</string>
+    <string name="migrate_option_tracking">Tracking</string>
+    <string name="migrate_option_delete_downloads">Delete downloads of the old entry</string>
+    <string name="migrate_option_migrate_only">Only applies to Migrate</string>
+    <string name="migrate_running">Migrating…</string>
+    <string name="migrate_done">Migrated to %1$s</string>
+    <string name="migrate_copied">Copied to %1$s</string>
+    <string name="migrate_failed">Migration failed</string>
+    <string name="migrate_failed_reason">Migration failed: %1$s</string>
+    <string name="migrate_same_entry">That is the entry being migrated</string>
 </resources>

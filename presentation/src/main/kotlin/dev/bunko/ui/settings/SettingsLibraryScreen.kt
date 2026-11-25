@@ -94,6 +94,7 @@ class SettingsLibraryScreen : Screen {
             downloadBadge = vm.downloadBadge,
             languageBadge = vm.languageBadge,
             localBadge = vm.localBadge,
+            showContinueReading = vm.showContinueReading,
             categoriesSize = vm.categories.collectAsState().value,
             openCategoriesScreen = { navigator.push(CategoriesScreen()) },
         )
@@ -113,6 +114,7 @@ class SettingsLibraryViewModel(
     val downloadBadge = libraryPreferences.downloadBadge().asStateFlow()
     val languageBadge = libraryPreferences.languageBadge().asStateFlow()
     val localBadge = libraryPreferences.localBadge().asStateFlow()
+    val showContinueReading = libraryPreferences.showContinueReading().asStateFlow()
     val gridSize = libraryPreferences.gridSize().asStateFlow()
 
     val showAllCategory = libraryPreferences.showAllCategory().asStateFlow()
@@ -140,6 +142,7 @@ fun SettingsLibraryScreenContent(
     downloadBadge: PreferenceMutableStateFlow<Boolean>,
     languageBadge: PreferenceMutableStateFlow<Boolean>,
     localBadge: PreferenceMutableStateFlow<Boolean>,
+    showContinueReading: PreferenceMutableStateFlow<Boolean>,
     showAllCategory: PreferenceMutableStateFlow<Boolean>,
     categoriesSize: Int,
     openCategoriesScreen: () -> Unit,
@@ -208,6 +211,12 @@ fun SettingsLibraryScreenContent(
                 }
                 item {
                     SwitchPreference(localBadge, stringResource(MR.strings.display_badge_local))
+                }
+                item {
+                    PreferenceSectionHeader(stringResource(MR.strings.other))
+                }
+                item {
+                    SwitchPreference(showContinueReading,stringResource(MR.strings.display_continue_reading))
                 }
                 item {
                     PreferenceSectionHeader(stringResource(MR.strings.settings_section_organization))

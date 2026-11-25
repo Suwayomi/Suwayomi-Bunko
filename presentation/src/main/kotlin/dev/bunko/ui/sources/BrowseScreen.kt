@@ -41,6 +41,8 @@ import dev.bunko.ui.base.screen.BaseScreen
 import dev.bunko.ui.extensions.components.ExtensionsScreenContent
 import dev.bunko.ui.extensions.components.LanguageDialog
 import dev.bunko.ui.sources.browse.SourceScreen
+import dev.bunko.ui.migration.MigrationMangaScreen
+import dev.bunko.ui.migration.MigrationSourcesContent
 import dev.bunko.ui.sources.globalsearch.GlobalSearchScreen
 import dev.bunko.ui.sources.home.components.SourceHomeScreenContent
 import dev.bunko.ui.stateViewModel
@@ -60,6 +62,7 @@ class BrowseScreen(
     override fun Content() {
         val sourcesVm = stateViewModel { sourceHomeViewModel(it) }
         val extensionsVm = viewModel { extensionsViewModel() }
+        val migrationVm = viewModel { migrationLibraryViewModel() }
         val navigator = LocalNavigator.currentOrThrow
         val extensionsState by extensionsVm.state.collectAsState()
 
@@ -67,9 +70,9 @@ class BrowseScreen(
         val extensionsLanguageDialog = rememberDialogState()
         val chooser = rememberNamedFileChooser(extensionsVm::install)
 
-        val pagerState = rememberPagerState(initialTab) { 2 }
+        val pagerState = rememberPagerState(initialTab) { 3 }
         val scope = rememberCoroutineScope()
-        val tabs = listOf(MR.strings.location_sources, MR.strings.location_extensions)
+        val tabs = listOf(MR.strings.location_sources, MR.strings.location_extensions, MR.strings.action_migrate)
 
         Scaffold(
             contentWindowInsets = WindowInsets(0),
@@ -101,6 +104,8 @@ class BrowseScreen(
                                     )
                                 },
                             )
+                        } else if (pagerState.currentPage == 2) {
+                            Toolbar(stringResource(MR.strings.location_browse), closable = false)
                         } else {
                             Toolbar(
                                 stringResource(MR.strings.location_browse),
@@ -149,6 +154,13 @@ class BrowseScreen(
                         onTogglePinned = sourcesVm::togglePinned,
                         isLoading = sourcesVm.isLoading.collectAsState().value,
                         sources = sourcesVm.sources.collectAsState().value,
+                    )
+
+                    2 -> MigrationSourcesContent(
+                        state = migrationVm.state.collectAsState().value,
+                        start = migrationVm::start,
+                        retry = { migrationVm.load() },
+                        onSourceClick = { navigator push MigrationMangaScreen(it.sourceId, it.source?.name) },
                     )
 
                     else -> ExtensionsScreenContent(

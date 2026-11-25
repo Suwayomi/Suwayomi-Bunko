@@ -134,7 +134,7 @@ private fun SearchField(
 ) {
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
-    LaunchedEffect(Unit) { runCatching { focusRequester.requestFocus() } }
+    LaunchedEffect(Unit) { if (text.isEmpty()) runCatching { focusRequester.requestFocus() } }
     BasicTextField(
         value = text,
         onValueChange = onChange,

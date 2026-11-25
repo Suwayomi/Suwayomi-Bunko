@@ -87,4 +87,6 @@ class LibraryPreferences(
     fun languageBadge(): Preference<Boolean> = preferenceStore.getBoolean("language_badge", false)
 
     fun localBadge(): Preference<Boolean> = preferenceStore.getBoolean("local_badge", false)
+
+    fun showContinueReading(): Preference<Boolean> = preferenceStore.getBoolean("show_continue_reading", true)
 }

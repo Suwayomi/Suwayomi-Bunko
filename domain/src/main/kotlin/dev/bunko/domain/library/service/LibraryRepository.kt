@@ -6,6 +6,7 @@
 
 package dev.bunko.domain.library.service
 
+import dev.bunko.domain.manga.model.Manga
 import dev.bunko.domain.schedule.ReleaseHistory
 import dev.bunko.domain.library.model.LibraryStatistics
 import dev.bunko.domain.library.model.UpdaterJobsInfo
@@ -15,6 +16,8 @@ interface LibraryRepository {
     fun addMangaToLibrary(mangaId: Long): Flow<Unit>
 
     fun removeMangaFromLibrary(mangaIds: List<Long>): Flow<Unit>
+
+    fun getLibraryManga(): Flow<List<Manga>>
 
     fun libraryUpdateSubscription(): Flow<UpdaterJobsInfo>
 

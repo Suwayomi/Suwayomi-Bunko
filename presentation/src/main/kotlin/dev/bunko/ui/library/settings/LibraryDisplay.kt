@@ -36,11 +36,13 @@ fun getLibraryDisplay(vm: LibrarySettingsViewModel): @Composable () -> Unit =
                 downloadBadges = vm.downloadBadges.collectAsState().value,
                 languageBadges = vm.languageBadges.collectAsState().value,
                 localBadges = vm.localBadges.collectAsState().value,
+                showContinueReading = vm.showContinueReading.collectAsState().value,
                 setDisplayMode = { vm.displayMode.value = it },
                 setUnreadBadges = { vm.unreadBadges.value = it },
                 setDownloadBadges = { vm.downloadBadges.value = it },
                 setLanguageBadges = { vm.languageBadges.value = it },
                 setLocalBadges = { vm.localBadges.value = it },
+                setShowContinueReading = { vm.showContinueReading.value = it },
             )
         }
     }
@@ -53,11 +55,13 @@ fun LibraryDisplay(
     downloadBadges: Boolean,
     languageBadges: Boolean,
     localBadges: Boolean,
+    showContinueReading: Boolean,
     setDisplayMode: (DisplayMode) -> Unit,
     setUnreadBadges: (Boolean) -> Unit,
     setDownloadBadges: (Boolean) -> Unit,
     setLanguageBadges: (Boolean) -> Unit,
     setLocalBadges: (Boolean) -> Unit,
+    setShowContinueReading: (Boolean) -> Unit,
 ) {
     Column(Modifier.fillMaxWidth()) {
         SheetHeading(stringResource(MR.strings.display_mode))
@@ -78,5 +82,7 @@ fun LibraryDisplay(
         CheckboxItem(stringResource(MR.strings.display_badge_unread), unreadBadges) { setUnreadBadges(!unreadBadges) }
         CheckboxItem(stringResource(MR.strings.display_badge_language), languageBadges) { setLanguageBadges(!languageBadges) }
         CheckboxItem(stringResource(MR.strings.display_badge_local), localBadges) { setLocalBadges(!localBadges) }
+        SheetHeading(stringResource(MR.strings.other))
+        CheckboxItem(stringResource(MR.strings.display_continue_reading), showContinueReading) { setShowContinueReading(!showContinueReading) }
     }
 }

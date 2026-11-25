@@ -79,15 +79,20 @@ class AndroidDownloadService : Service() {
                 setProgress(0, 0, true)
             } else {
                 val max = item.chapter.pageCount
-                val current = (max * item.progress).toInt().coerceIn(0, max)
                 val title = item.manga.title.chop(15)
                 val chapter = item.chapter.name.replaceFirst(
                     "${Pattern.quote(title)}[\\s]*[-]*[\\s]*".toRegex(RegexOption.IGNORE_CASE),
                     "",
                 )
                 setContentTitle("$title - $chapter".chop(30))
-                setContentText(MR.strings.chapter_downloading_progress.format(current, max).toString(this@AndroidDownloadService))
-                setProgress(max, current, false)
+                if (max > 0) {
+                    val current = (max * item.progress).toInt().coerceIn(0, max)
+                    setContentText(MR.strings.chapter_downloading_progress.format(current, max).toString(this@AndroidDownloadService))
+                    setProgress(max, current, false)
+                } else {
+                    setContentText(null)
+                    setProgress(0, 0, true)
+                }
             }
             build()
         }

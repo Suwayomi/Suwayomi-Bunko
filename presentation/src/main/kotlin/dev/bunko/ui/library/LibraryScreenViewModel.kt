@@ -167,7 +167,9 @@ class LibraryScreenViewModel(
     val languageBadges = libraryPreferences.languageBadge().stateIn(scope)
     val localBadges = libraryPreferences.localBadge().stateIn(scope)
 
-    val resume = libraryResume.entry.stateIn(scope, SharingStarted.WhileSubscribed(5_000), libraryResume.latest)
+    private val showResume = libraryPreferences.showContinueReading().stateIn(scope)
+    val resume = combine(libraryResume.entry, showResume) { entry, show -> entry.takeIf { show } }
+        .stateIn(scope, SharingStarted.WhileSubscribed(5_000), libraryResume.latest.takeIf { showResume.value })
 
     private val sortMode = libraryPreferences.sortMode().stateIn(scope)
     private val sortAscending = libraryPreferences.sortAscending().stateIn(scope)

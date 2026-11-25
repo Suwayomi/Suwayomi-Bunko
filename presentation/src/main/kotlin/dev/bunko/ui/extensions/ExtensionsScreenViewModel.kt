@@ -6,6 +6,7 @@
 
 package dev.bunko.ui.extensions
 
+import dev.bunko.domain.ServerListeners
 import dev.bunko.ui.base.userMessage
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.text.intl.Locale
@@ -56,6 +57,7 @@ class ExtensionsScreenViewModel(
     private val installExtension: InstallExtension,
     private val updateExtension: UpdateExtension,
     private val uninstallExtension: UninstallExtension,
+    private val serverListeners: ServerListeners,
     extensionPreferences: ExtensionPreferences,
     contextWrapper: ContextWrapper,
 ) : ViewModel(contextWrapper) {
@@ -118,6 +120,7 @@ class ExtensionsScreenViewModel(
             }
 
             getExtensions()
+            serverListeners.updateSources()
         }
     }
 
@@ -149,7 +152,7 @@ class ExtensionsScreenViewModel(
     ) {
         scope.launch {
             _state.update { current ->
-                current.copy(workingExtensions = current.workingExtensions + extension.apkName)
+                current.copy(workingExtensions = current.workingExtensions + extension.pkgName)
             }
             var failed = false
             action {
@@ -157,8 +160,9 @@ class ExtensionsScreenViewModel(
                 toast(it.userMessage.toPlatformString())
             }
             getExtensions()
+            serverListeners.updateSources()
             _state.update { current ->
-                current.copy(workingExtensions = current.workingExtensions - extension.apkName)
+                current.copy(workingExtensions = current.workingExtensions - extension.pkgName)
             }
             if (!failed) {
                 toast(successMessage.toPlatformString(extension.name))
@@ -200,7 +204,7 @@ class ExtensionsScreenViewModel(
         val all = MR.strings.all.toPlatformString()
         val availableLabel = MR.strings.available.toPlatformString()
         val byName = compareBy<Extension, String>(String.CASE_INSENSITIVE_ORDER) { it.name }
-        fun List<Extension>.toItems() = map { ExtensionUI.ExtensionItem(it, it.apkName in workingExtensions) }
+        fun List<Extension>.toItems() = map { ExtensionUI.ExtensionItem(it, it.pkgName in workingExtensions) }
         fun section(title: String, items: List<Extension>): List<ExtensionUI> =
             if (items.isEmpty()) emptyList() else listOf(ExtensionUI.Header(title)) + items.toItems()
 

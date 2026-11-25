@@ -449,14 +449,17 @@ class ReaderMenuViewModel(
         val (chapter, pages) = coroutineScope {
             val chapters = fetchChapters(mangaId, chapterId)
                 ?: return@coroutineScope null
-            val chapter = chapters.find { it.id == chapterId }
-                ?.let { ReaderChapter(it) }
+            val current = viewerChapters.value.currChapter
+            val chapter = current?.takeIf { !fromMenuButton && it.chapter.id == chapterId }
+                ?: chapters.find { it.id == chapterId }
+                    ?.let { ReaderChapter(it) }
                 ?: run {
                     _state.value = ReaderChapter.State.Error(Exception("Chapter $chapterId not found"))
                     return@coroutineScope null
                 }
             val pages = loader.loadChapter(chapter)
             viewerChapters.update { it.copy(currChapter = chapter) }
+            if (current != null && current !== chapter) current.recycle()
 
             val options = chapterOptions()
             if (viewerChapters.value.nextChapter == null) {

@@ -184,11 +184,11 @@ private fun DownloadingIconButton(
                 )
                 CircularProgressIndicator(
                     progress = { animatedProgress },
-                    Modifier
+                    modifier = Modifier
                         .size(26.dp)
                         .padding(2.dp),
-                    LocalContentColor.current.copy(alpha = DISABLED_ALPHA),
-                    2.dp,
+                    color = MaterialTheme.colorScheme.primary,
+                    strokeWidth = 2.dp,
                 )
                 Icon(
                     Icons.Rounded.ArrowDownward,

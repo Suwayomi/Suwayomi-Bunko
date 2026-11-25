@@ -95,6 +95,7 @@ fun GlobalSearchScreenContent(
     onSourceClick: (Source) -> Unit,
     onMangaClick: (Manga) -> Unit,
     onMangaLongClick: (Manga) -> Unit,
+    title: String = stringResource(MR.strings.location_global_search),
 ) {
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -105,7 +106,7 @@ fun GlobalSearchScreenContent(
         ),
         topBar = {
             Toolbar(
-                name = stringResource(MR.strings.location_global_search),
+                name = title,
                 searchText = query,
                 search = setQuery,
                 searchSubmit = { submitSearch(query) },

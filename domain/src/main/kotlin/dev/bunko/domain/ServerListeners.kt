@@ -46,6 +46,11 @@ class ServerListeners {
     )
     val libraryUpdated = libraryListener.asSharedFlow()
 
+    private val sourcesListener = MutableSharedFlow<Unit>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+
     fun <T> combineMangaUpdates(
         flow: Flow<T>,
         cached: Flow<T>? = null,
@@ -102,6 +107,16 @@ class ServerListeners {
 
     fun updateLibrary() {
         libraryListener.tryEmit(Unit)
+    }
+
+    fun <T> combineSources(flow: Flow<T>) =
+        sourcesListener
+            .startWith(Unit)
+            .buffer(capacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+            .flatMapLatest { flow }
+
+    fun updateSources() {
+        sourcesListener.tryEmit(Unit)
     }
 
     companion object {

@@ -9,6 +9,8 @@ package dev.bunko.ui.reader.loader
 import okio.IOException
 import dev.bunko.ui.reader.toReaderFailure
 import dev.bunko.ui.reader.ReaderFailure
+import android.graphics.BitmapFactory
+import android.os.Build
 import androidx.compose.ui.graphics.ImageBitmapConfig
 import androidx.compose.ui.unit.IntSize
 import dev.bunko.core.io.source
@@ -55,6 +57,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.math.ceil
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.sqrt
 import okio.BufferedSource
 import okio.FileSystem
 import okio.buffer
@@ -201,28 +207,22 @@ class ServerPageLoader(
     }
 
     private suspend fun getImageFromCache(page: ReaderPage): ReaderPage.ImageDecodeState {
-        val result = decodeFromCache(page, Options { imageBitmapConfig = ImageBitmapConfig.Gpu })
+        val result = decodeFromCache(page, gpu = true)
         if (result !is ReaderPage.ImageDecodeState.FailedToDecode) return result
         log.warn(result.exception) { "Retrying page ${page.index2} with a downscaled software bitmap" }
-        return decodeFromCache(
-            page,
-            Options {
-                imageBitmapConfig = ImageBitmapConfig.Argb8888
-                maxImageSize = FALLBACK_MAX_IMAGE_SIZE
-            },
-        )
+        return decodeFromCache(page, gpu = false)
     }
 
     private suspend fun decodeFromCache(
         page: ReaderPage,
-        options: Options,
+        gpu: Boolean,
     ): ReaderPage.ImageDecodeState =
         runCatching {
             if (offline) {
                 offlineStore.pagePath(chapter.chapter.mangaId, chapter.chapter.id, page.index2)
-                    ?.let { decode(FileSystem.SYSTEM.source(it).buffer(), options, page) }
+                    ?.let { decode(FileSystem.SYSTEM.source(it).buffer(), gpu, page) }
             } else {
-                chapterCache.openSnapshot(page.cacheKey)?.use { decode(it.source(), options, page) }
+                chapterCache.openSnapshot(page.cacheKey)?.use { decode(it.source(), gpu, page) }
             }
         }.throwIfCancellation()
             .onFailure { log.warn(it) { "Page ${page.index2} could not be opened" } }
@@ -231,10 +231,15 @@ class ServerPageLoader(
 
     private suspend fun decode(
         source: BufferedSource,
-        options: Options,
+        gpu: Boolean,
         page: ReaderPage,
     ): ReaderPage.ImageDecodeState =
         source.use {
+            val longSide = decodedLongSide(source, if (gpu) MAX_PIXELS else FALLBACK_MAX_PIXELS)
+            val options = Options {
+                imageBitmapConfig = if (gpu && longSide <= MAX_GPU_SIDE) ImageBitmapConfig.Gpu else ImageBitmapConfig.Argb8888
+                maxImageSize = longSide
+            }
             val decoder = bitmapDecoderFactory.create(
                 ImageResult.OfSource(ImageSource(source), ImageSourceFrom.Disk),
                 options,
@@ -249,6 +254,17 @@ class ServerPageLoader(
                 }
                 .getOrElse { ReaderPage.ImageDecodeState.FailedToDecode(it) }
         }
+
+    private fun decodedLongSide(source: BufferedSource, maxPixels: Double): Int {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        source.peek().inputStream().use { BitmapFactory.decodeStream(it, null, bounds) }
+        val width = bounds.outWidth
+        val height = bounds.outHeight
+        if (width <= 0 || height <= 0) return Options.DEFAULT_MAX_IMAGE_SIZE
+        val scale = min(1.0, sqrt(maxPixels / (width.toDouble() * height)))
+        val side = ceil(max(width, height) * scale).toInt().coerceAtLeast(1)
+        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) min(side, MAX_GPU_SIDE) else side
+    }
 
     private fun preloadAround(
         currentPage: ReaderPage,
@@ -380,7 +396,9 @@ class ServerPageLoader(
     private companion object {
         private const val PRELOAD_BEHIND = 2
         private const val SERVER_RETRY_DELAY_MS = 400L
-        private const val FALLBACK_MAX_IMAGE_SIZE = 2048
+        private const val MAX_PIXELS = 16_000_000.0
+        private const val FALLBACK_MAX_PIXELS = 4_000_000.0
+        private const val MAX_GPU_SIDE = 8192
         private val log = logging()
     }
 

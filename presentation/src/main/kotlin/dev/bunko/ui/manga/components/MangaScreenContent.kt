@@ -94,6 +94,8 @@ import dev.bunko.uicore.icons.BunkoAssets
 import dev.bunko.uicore.icons.bunkoassets.DonePrev
 import dev.bunko.uicore.resources.stringResource
 import cafe.adriel.voyager.navigator.LocalNavigator
+import dev.bunko.ui.migration.MigrationSearchScreen
+import androidx.compose.material.icons.rounded.SwapHoriz
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.SharedFlow
@@ -220,6 +222,7 @@ fun MangaScreenContent(
                             downloadUnread = downloadUnread,
                             downloadAll = downloadAll,
                             saveUnreadOffline = saveUnreadOffline,
+                            migrate = manga?.let { { navigator?.push(MigrationSearchScreen(it.id, it.title)) } },
                         )
                     }
                 },
@@ -450,6 +453,7 @@ private fun getActionItems(
     downloadUnread: () -> Unit,
     downloadAll: () -> Unit,
     saveUnreadOffline: (Int?) -> Unit,
+    migrate: (() -> Unit)?,
 ): ImmutableList<Action> =
     listOf(
         ActionItem(
@@ -496,6 +500,13 @@ private fun getActionItems(
                     doAction = { saveUnreadOffline(null) },
                 ),
             ).toImmutableList(),
+        ),
+        ActionItem(
+            name = stringResource(MR.strings.action_migrate),
+            icon = Icons.Rounded.SwapHoriz,
+            overflowMode = OverflowMode.ALWAYS_OVERFLOW,
+            doAction = { migrate?.invoke() },
+            enabled = migrate != null,
         ),
     ).toImmutableList()
 

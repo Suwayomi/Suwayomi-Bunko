@@ -41,6 +41,8 @@ import dev.bunko.ui.sources.globalsearch.GlobalSearchViewModel
 import dev.bunko.ui.sources.home.SourceHomeScreenViewModel
 import dev.bunko.ui.sources.settings.SourceSettingsScreenViewModel
 import dev.bunko.ui.statistics.StatisticsScreenViewModel
+import dev.bunko.ui.migration.MigrationLibraryViewModel
+import dev.bunko.ui.migration.MigrationViewModel
 import dev.bunko.ui.updates.UpdatesScreenViewModel
 import dev.bunko.ui.history.ReadHistoryViewModel
 import dev.bunko.ui.schedule.ScheduleViewModel
@@ -56,6 +58,8 @@ interface ViewModelComponent {
     val downloadsViewModel: (Boolean) -> DownloadsScreenViewModel
     val offlineViewModel: () -> OfflineScreenViewModel
     val statisticsViewModel: () -> StatisticsScreenViewModel
+    val migrationLibraryViewModel: () -> MigrationLibraryViewModel
+    val migrationViewModel: (params: MigrationViewModel.Params) -> MigrationViewModel
     val extensionsViewModel: () -> ExtensionsScreenViewModel
     val libraryViewModel: (SavedStateHandle) -> LibraryScreenViewModel
     val librarySettingsViewModel: () -> LibrarySettingsViewModel

@@ -88,3 +88,11 @@ query GetLibraryStatistics {
     excludeEntryWithUnreadChapters
   }
 }
+
+query GetLibraryManga {
+  mangas(condition: {inLibrary: true}) {
+    nodes {
+      ...MangaFragment
+    }
+  }
+}

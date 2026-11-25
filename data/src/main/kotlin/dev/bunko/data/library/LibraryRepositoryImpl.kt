@@ -1,6 +1,8 @@
 package dev.bunko.data.library
 
 import dev.bunko.data.ApolloAppClient
+import dev.bunko.domain.manga.model.Manga
+import dev.bunko.data.graphql.GetLibraryMangaQuery
 import dev.bunko.data.graphql.GetLibraryStatisticsQuery
 import dev.bunko.data.graphql.GetReleaseScheduleQuery
 import dev.bunko.data.graphql.type.IncludeOrExclude
@@ -42,6 +44,11 @@ class LibraryRepositoryImpl(
         apolloClient.mutation(SetMangasInLibraryMutation(mangaIds.map { it.toInt() }, false))
             .toFlow()
             .map { it.dataOrRejected }
+
+    override fun getLibraryManga(): Flow<List<Manga>> =
+        apolloClient.query(GetLibraryMangaQuery())
+            .toFlow()
+            .map { response -> response.dataAssertNoErrors.mangas.nodes.map { it.mangaFragment.toManga() }.filter { it.inLibrary } }
 
     override fun libraryUpdateSubscription(): Flow<UpdaterJobsInfo> =
         resilient(

@@ -34,7 +34,7 @@ class PageImageStore(
         val values = ContentValues().apply {
             put(MediaStore.Images.Media.DISPLAY_NAME, name)
             put(MediaStore.Images.Media.MIME_TYPE, mime)
-            put(MediaStore.Images.Media.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/Bunko/$folder")
+            put(MediaStore.Images.Media.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/$APP_FOLDER/$folder")
             put(MediaStore.Images.Media.IS_PENDING, 1)
         }
         val uri = checkNotNull(resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)) { "media store refused the image" }
@@ -46,14 +46,19 @@ class PageImageStore(
 
     private fun saveToTree(tree: Uri, folder: String, name: String, mime: String, write: (BufferedSink) -> Unit) {
         val resolver = context.contentResolver
-        val root = DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree))
-        val dir = childDirectory(resolver, tree, root, folder)
-            ?: checkNotNull(DocumentsContract.createDocument(resolver, root, Document.MIME_TYPE_DIR, folder)) { "couldn't create $folder" }
+        val treeId = DocumentsContract.getTreeDocumentId(tree)
+        val picked = DocumentsContract.buildDocumentUriUsingTree(tree, treeId)
+        val root = if (treeId.substringAfterLast(':').substringAfterLast('/') == APP_FOLDER) picked else directory(resolver, tree, picked, APP_FOLDER)
+        val dir = directory(resolver, tree, root, folder)
         val file = checkNotNull(DocumentsContract.createDocument(resolver, dir, mime, name)) { "couldn't create $name" }
         runCatching { checkNotNull(resolver.openOutputStream(file)).sink().buffer().use(write) }
             .onFailure { DocumentsContract.deleteDocument(resolver, file) }
             .getOrThrow()
     }
+
+    private fun directory(resolver: ContentResolver, tree: Uri, parent: Uri, name: String): Uri =
+        childDirectory(resolver, tree, parent, name)
+            ?: checkNotNull(DocumentsContract.createDocument(resolver, parent, Document.MIME_TYPE_DIR, name)) { "couldn't create $name" }
 
     private fun childDirectory(resolver: ContentResolver, tree: Uri, parent: Uri, name: String): Uri? {
         val children = DocumentsContract.buildChildDocumentsUriUsingTree(tree, DocumentsContract.getDocumentId(parent))
@@ -63,5 +68,9 @@ class PageImageStore(
                 .firstOrNull { it.getString(1) == name && it.getString(2) == Document.MIME_TYPE_DIR }
                 ?.let { DocumentsContract.buildDocumentUriUsingTree(tree, it.getString(0)) }
         }
+    }
+
+    private companion object {
+        private const val APP_FOLDER = "Bunko"
     }
 }
